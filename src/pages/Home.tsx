@@ -10,6 +10,7 @@ type Project = {
 
 function Home() {
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     fetch("http://localhost:4000/api/projects")
@@ -18,48 +19,56 @@ function Home() {
       .catch((err) => console.error("Failed to fetch projects:", err));
   }, []);
 
+  useEffect(() => {
+    if (!featuredProjects || featuredProjects.length === 0) return;
+    const id = setInterval(() => {
+      setActiveIndex((i) => (i + 1) % featuredProjects.length);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [featuredProjects]);
+
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "60vh",
-          background: "#fff",
-          marginBottom: 40,
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "2.8rem",
-            color: "#111",
-            marginBottom: 16,
-            fontWeight: 700,
-            letterSpacing: 2,
-            lineHeight: 1.1,
-            textAlign: "center",
-          }}
-        >
-          JKBG
-          <br />
-          Construction Company Ltd
-        </h1>
-        <p
-          style={{
-            fontSize: "1.3rem",
-            color: "#222",
-            fontStyle: "italic",
-            marginBottom: 0,
-            fontWeight: 500,
-            textAlign: "center",
-            maxWidth: 500,
-          }}
-        >
-          "A legacy of excellence: Building tomorrow today"
-        </p>
-      </div>
+      <section className="hero-slideshow" style={{ marginBottom: 24 }}>
+        {featuredProjects.length === 0 ? (
+          <div
+            style={{
+              width: "100%",
+              minHeight: "40vh",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#222",
+              color: "#fff",
+              borderRadius: 12,
+            }}
+          >
+            <div className="hero-overlay">
+              <h1 style={{ fontSize: "2rem", margin: 0 }}>JKBG Construction</h1>
+              <p style={{ marginTop: 8, opacity: 0.9 }}>
+                Building tomorrow, today
+              </p>
+            </div>
+          </div>
+        ) : (
+          featuredProjects.map((p, idx) => (
+            <div
+              key={p.id}
+              className={`hero-slide ${idx === activeIndex ? "active" : ""}`}
+              style={{ backgroundImage: `url(${p.image})`, height: "50vh" }}
+            />
+          ))
+        )}
+
+        <div className="hero-overlay">
+          <h1 style={{ fontSize: "2.4rem", margin: 0, fontWeight: 800 }}>
+            JKBG Construction Company Ltd
+          </h1>
+          <p style={{ marginTop: 8, opacity: 0.95 }}>
+            Building projects with integrity and excellence
+          </p>
+        </div>
+      </section>
       <div
         id="services"
         style={{

@@ -1,32 +1,119 @@
+/* Theme Color: #f97416 (Orange) */
+:root {
+  --theme-color: #f97416;
+  --theme-dark: #ea6e0a;
+  --theme-light: #fbaa38;
+  --text-dark: #1a1a1a;
+  --text-light: #f7f7fa;
+  --border-color: #e5e5e5;
+  --transition-fast: 200ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+.theme-background {
+  background-color: rgba(0, 0, 0, 0);
+  background-image: linear-gradient(
+    to right,
+    var(--theme-color),
+    var(--theme-color)
+  );
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+}
+
 /* Navbar styles */
 .navbar {
   background: #fff;
-  padding: 10px 0;
+  padding: 12px 20px;
   margin-bottom: 20px;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-bottom: 3px solid var(--theme-color);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: opacity var(--transition-normal);
+}
+
+.navbar-brand:hover {
+  opacity: 0.8;
+}
+
+.navbar-logo {
+  height: 50px;
+  width: 50px;
+  border-radius: 8px;
+  background: var(--theme-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: white;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 8px rgba(249, 116, 21, 0.2);
+}
+
+.navbar-company-name {
+  font-weight: 700;
+  color: var(--theme-color);
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .navbar-nav {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex: 1;
 }
 
 .navbar-btn {
   background: transparent;
   border: none;
-  color: #222;
+  color: var(--text-dark);
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   cursor: pointer;
   padding: 8px 16px;
-  transition: color 0.2s;
+  transition: color var(--transition-normal),
+    background-color var(--transition-normal);
+  border-radius: 6px;
+  position: relative;
+}
+
+.navbar-btn:hover {
+  color: var(--theme-color);
+  background: rgba(249, 116, 21, 0.08);
+}
+
+.navbar-btn::after {
+  content: "";
+  display: block;
+  width: 0;
+  height: 2px;
+  background: var(--theme-color);
+  transition: width var(--transition-normal);
+  position: absolute;
+  left: 16px;
+  bottom: 4px;
+}
+
+.navbar-btn:hover::after {
+  width: calc(100% - 32px);
 }
 #root {
   max-width: 1280px;
@@ -34,62 +121,46 @@
   padding: 2rem;
   text-align: center;
   min-height: 100vh;
-  background: #f7f7fa;
+  background: var(--text-light);
 }
+
 body {
-  background: #f7f7fa;
-  color: #222;
+  background: var(--text-light);
+  color: var(--text-dark);
   font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
   margin: 0;
   padding: 0;
 }
-.navbar {
-  background: #fff !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
 
 nav button {
   background: transparent !important;
-  color: #1a1a1a !important;
+  color: var(--text-dark) !important;
   border: none;
-  font-weight: bold;
-  font-size: 1.08rem;
+  font-weight: 600;
+  font-size: 0.95rem;
   padding: 8px 16px;
   cursor: pointer;
   position: relative;
-  transition: color 0.2s;
+  transition: color var(--transition-normal),
+    background-color var(--transition-normal);
   outline: none;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 6px;
 }
-nav button::after {
-  content: "";
-  display: block;
-  width: 0;
-  height: 2px;
-  background: #282c34;
-  transition: width 0.2s;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-nav .home-btn:hover + .service-link-btn {
-  display: block;
-}
+
 nav button:hover {
-  background: #c7d2fe !important;
+  color: var(--theme-color) !important;
+  background: rgba(249, 116, 21, 0.08) !important;
 }
 
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
-  transition: filter 300ms;
+  transition: filter var(--transition-normal);
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em var(--theme-color));
 }
 
 @keyframes logo-spin {
@@ -109,8 +180,203 @@ nav button:hover {
 
 .card {
   padding: 2em;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(249, 116, 21, 0.15);
+  border-color: var(--theme-color);
 }
 
 .read-the-docs {
   color: #888;
+}
+
+/* Button Styles */
+.btn-primary {
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-normal),
+    box-shadow var(--transition-normal), transform var(--transition-fast);
+}
+
+.btn-primary:hover {
+  background: var(--theme-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 116, 21, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(249, 116, 21, 0.1);
+  color: var(--theme-color);
+  border: 2px solid var(--theme-color);
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-normal),
+    color var(--transition-normal), transform var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background: var(--theme-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* About page boxes */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.about-box {
+  background: #fff;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform var(--transition-normal),
+    box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.about-box:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(249, 116, 21, 0.12);
+  border-color: var(--theme-color);
+}
+
+/* Slideshow / hero background */
+.hero-slideshow {
+  position: relative;
+  width: 100%;
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.hero-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+}
+
+.hero-slide.active {
+  opacity: 1;
+}
+
+/* Full-width responsive hero text overlay */
+.hero-overlay {
+  position: relative;
+  z-index: 2;
+  color: white;
+  text-align: center;
+  padding: 40px 16px;
+}
+
+@media (max-width: 768px) {
+  .navbar-logo {
+    height: 40px;
+    width: 40px;
+  }
+  .navbar-company-name {
+    font-size: 0.95rem;
+  }
+  .hero-overlay h1 {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 1rem;
+  }
+  .hero-overlay h1 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Form inputs and selects */
+input,
+textarea,
+select {
+  transition: border-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    background-color var(--transition-normal);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--theme-color);
+  box-shadow: 0 0 0 3px rgba(249, 116, 21, 0.1);
+}
+
+/* Modal backdrop and content */
+.modal-backdrop {
+  animation: fadeInBackdrop var(--transition-normal) ease forwards;
+}
+
+.modal-content {
+  animation: slideUpModal var(--transition-normal) ease forwards;
+}
+
+@keyframes fadeInBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUpModal {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* General interactive element hover state */
+a {
+  transition: color var(--transition-normal);
+}
+
+/* Smooth page transitions */
+.page-transition {
+  animation: fadeInPage var(--transition-fast) ease forwards;
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
