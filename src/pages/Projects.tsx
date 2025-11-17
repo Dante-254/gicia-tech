@@ -30,17 +30,25 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   const [loginError, setLoginError] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  const API_BASE = import.meta.env.VITE_API_BASE || "";
+
+  // helper to build API urls; if API_BASE is empty we use relative paths
+  const api = (p: string) => (API_BASE ? `${API_BASE}${p}` : p);
+
   // Fetch projects from backend API
   useEffect(() => {
-    fetch("http://localhost:4000/api/projects")
+    fetch(api("/api/projects"))
       .then((res) => res.json())
       .then((data) => {
         // Convert relative image URLs to absolute and encode
         const projects = data.map((p: Project) => ({
           ...p,
-          image: p.image.startsWith("http")
-            ? p.image
-            : `http://localhost:4000${encodeURI(p.image)}`,
+          image:
+            p.image && p.image.startsWith("http")
+              ? p.image
+              : API_BASE
+              ? `${API_BASE}${encodeURI(p.image)}`
+              : p.image,
         }));
         setProjects(projects);
       })
@@ -61,7 +69,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
     // Upload to server (authenticated)
     const fd = new FormData();
     fd.append("image", file);
-    fetch("http://localhost:4000/api/upload", {
+    fetch(api("/api/upload"), {
       method: "POST",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
@@ -81,7 +89,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoginError("");
-    const res = await fetch("http://localhost:4000/api/superusers/login", {
+    const res = await fetch(api("/api/superusers/login"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(loginForm),
@@ -105,7 +113,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!superUser) return;
-    const res = await fetch("http://localhost:4000/api/projects", {
+    const res = await fetch(api("/api/projects"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -163,17 +171,14 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   const handleUpdate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!selectedProject) return;
-    const res = await fetch(
-      `http://localhost:4000/api/projects/${selectedProject.id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
-        },
-        body: JSON.stringify(editForm),
-      }
-    );
+    const res = await fetch(`${api(`/api/projects/${selectedProject.id}`)}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+      },
+      body: JSON.stringify(editForm),
+    });
     if (res.ok) {
       const data = await res.json();
       if (data.project) {
@@ -189,15 +194,12 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   const handleDelete = async () => {
     if (!selectedProject) return;
     if (!confirm("Delete this project? This cannot be undone.")) return;
-    const res = await fetch(
-      `http://localhost:4000/api/projects/${selectedProject.id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
-        },
-      }
-    );
+    const res = await fetch(`${api(`/api/projects/${selectedProject.id}`)}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+      },
+    });
     if (res.ok) {
       setProjects((prev) => prev.filter((p) => p.id !== selectedProject.id));
       closeModal();

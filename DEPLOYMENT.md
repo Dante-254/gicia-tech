@@ -20,13 +20,26 @@ Cloudinary (image hosting)
 
 - Why: Cloudinary stores images, serves them via CDN, and gives secure public URLs you can embed in the frontend. It removes reliance on server local file storage.
 - How it was integrated: the server's `/api/upload` route will forward uploaded files to Cloudinary when the `CLOUDINARY_*` env vars are set. The server will delete the local copy after upload and return the hosted `secure_url`.
-- Environment variables to set on Vercel (or your host):
-  - `CLOUDINARY_CLOUD_NAME`
-  - `CLOUDINARY_API_KEY`
-  - `CLOUDINARY_API_SECRET`
-  - `JWT_SECRET` (set a strong secret)
-  - `FRONTEND_ORIGIN` (e.g., `https://your-site.vercel.app`)
-  - `RAPTOR_MINI` / `VITE_RAPTOR_MINI` (feature flags)
+
+Migration (upload existing images to Cloudinary)
+
+- Locally, set the Cloudinary env vars and run the migration script from the `server/` folder:
+
+  ```bash
+  cd server
+  export CLOUDINARY_CLOUD_NAME=your_cloud_name
+  export CLOUDINARY_API_KEY=your_api_key
+  export CLOUDINARY_API_SECRET=your_api_secret
+  npm run migrate-cloudinary
+  ```
+
+  The script will:
+
+  - upload any local `/public/project-images/*` files referenced in `server/db.json` to Cloudinary,
+  - replace the `image` paths in `server/db.json` with the Cloudinary `secure_url`,
+  - back up your original `db.json` to `db.json.bak`.
+
+Important: After running migration, commit the updated `server/db.json` (which will now reference hosted image URLs) and push to your production backend host so the frontend can display images without relying on local file storage.
 
 Important production notes
 

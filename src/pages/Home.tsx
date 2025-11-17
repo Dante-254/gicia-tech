@@ -13,15 +13,21 @@ function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:4000/api/projects")
+    const API_BASE = import.meta.env.VITE_API_BASE || "";
+    const api = (p: string) => (API_BASE ? `${API_BASE}${p}` : p);
+
+    fetch(api("/api/projects"))
       .then((res) => res.json())
       .then((data) => {
         // Convert ALL project images to absolute URLs and encode them
         const projects = data.map((p: Project) => ({
           ...p,
-          image: p.image.startsWith("http")
-            ? p.image
-            : `http://localhost:4000${encodeURI(p.image)}`,
+          image:
+            p.image && p.image.startsWith("http")
+              ? p.image
+              : API_BASE
+              ? `${API_BASE}${encodeURI(p.image)}`
+              : p.image,
         }));
         setFeaturedProjects(projects);
       })

@@ -1,0 +1,206 @@
+{
+  "superusers": [
+    {
+      "id": 1,
+      "username": "owner",
+      "password_hash": "$2a$10$lrwK.eMMNL5ph.qtQSH8nOcJ83ITpOS3OnfB5MF8Gtk1SG94A.Ijm"
+    },
+    {
+      "id": 2,
+      "username": "Super User",
+      "password_hash": "$2a$10$lrwK.eMMNL5ph.qtQSH8nOcJ83ITpOS3OnfB5MF8Gtk1SG94A.Ijm"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "Modern Apartment Complex",
+      "description": "A luxury apartment complex with modern amenities.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.35.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 3,
+      "title": "Office Tower",
+      "description": "State-of-the-art office tower in the CBD.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.36 (1).jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 6,
+      "title": "Luxury Villas",
+      "description": "Exclusive villas with private gardens and pools.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.36.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 10,
+      "title": "Shopping Mall",
+      "description": "Modern shopping mall with entertainment facilities.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.38.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 15,
+      "title": "Beach Resort",
+      "description": "Beautiful resort on the Kenyan coast.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.40.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 21,
+      "title": "Golf Course Estate",
+      "description": "Premium estate with golf course views.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.41.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 28,
+      "title": "Tech Park",
+      "description": "A hub for technology companies and startups.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.42.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 36,
+      "title": "Hospital Complex",
+      "description": "State-of-the-art medical facilities.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.43.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 45,
+      "title": "School Campus",
+      "description": "Modern school campus for all ages.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.44 (1).jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.505Z"
+    },
+    {
+      "id": 55,
+      "title": "Conference Center",
+      "description": "Large conference and event center.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.44.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 66,
+      "title": "Warehouse Facility",
+      "description": "Secure warehouse for logistics and storage.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.45.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 78,
+      "title": "Residential Estate",
+      "description": "Family-friendly residential estate.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.46 (1).jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 91,
+      "title": "Business Center",
+      "description": "Offices and meeting rooms for businesses.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.46.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 105,
+      "title": "Sports Complex",
+      "description": "Facilities for multiple sports.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.47.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 120,
+      "title": "Retirement Village",
+      "description": "Comfortable living for seniors.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.48 (1).jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 136,
+      "title": "Eco Homes",
+      "description": "Sustainable eco-friendly homes.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.48.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 153,
+      "title": "City Hotel",
+      "description": "Luxury hotel in the city center.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.49.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 171,
+      "title": "Lakeview Apartments",
+      "description": "Apartments with stunning lake views.",
+      "status": "Sold",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.50.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 190,
+      "title": "Mountain Retreat",
+      "description": "Peaceful retreat in the mountains.",
+      "status": "Available",
+      "image": "/project-images/WhatsApp Image 2025-11-07 at 19.30.51.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z"
+    },
+    {
+      "id": 210,
+      "title": "Urban Lofts",
+      "description": "Trendy loft apartments in the city.",
+      "status": "Available",
+      "image": "http://localhost:4000/project-images/WhatsApp%20Image%202025-11-07%20at%2019.30.54.jpeg",
+      "created_by": "system",
+      "created_at": "2025-11-17T09:21:09.506Z",
+      "updated_at": "2025-11-17T12:58:20.418Z"
+    },
+    {
+      "id": 211,
+      "title": "testd add",
+      "description": "lorem ippsum",
+      "status": "Available",
+      "image": "/project-images/1763384342122_Screenshot_20251116_211827.png",
+      "created_by": "Super User",
+      "created_at": "2025-11-17T12:59:30.034Z"
+    }
+  ]
+}
