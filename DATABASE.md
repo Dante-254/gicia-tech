@@ -168,8 +168,23 @@ node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('newPassword', 10, (err
    - Install: `npm install express-rate-limit`
 
 6. **Consider upgrading to a real database**
-   - For larger deployments, use MongoDB, PostgreSQL, or MySQL
-   - Provides better scalability and security
+
+### Feature flags and environment variables
+
+- Set `JWT_SECRET` (server) to a secure value before production.
+- Set `FRONTEND_ORIGIN` to the production front-end URL to restrict CORS.
+- Use `RAPTOR_MINI` or `VITE_RAPTOR_MINI` (true/false) to enable/disable preview features across clients. This repo exposes a server endpoint `/api/config` that returns flags (e.g., `raptor_mini`).
+- Example `.env` variables:
+
+```
+JWT_SECRET=super_secret_value
+PORT=4000
+FRONTEND_ORIGIN=https://www.example.com
+RAPTOR_MINI=false
+```
+
+- For larger deployments, use MongoDB, PostgreSQL, or MySQL
+- Provides better scalability and security
 
 ---
 

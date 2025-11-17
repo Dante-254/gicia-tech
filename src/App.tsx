@@ -18,6 +18,10 @@ function App() {
     return localStorage.getItem("jkbg_darkmode") === "true";
   });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [config, setConfig] = useState({
+    raptor_mini: false,
+    env: "development",
+  });
 
   useEffect(() => {
     localStorage.setItem("jkbg_darkmode", darkMode.toString());
@@ -27,6 +31,21 @@ function App() {
       document.documentElement.removeAttribute("data-theme");
     }
   }, [darkMode]);
+
+  useEffect(() => {
+    // Try to fetch server-side config/feature-flags
+    // Use vite env as a fallback if server not available
+    const clientFlag = import.meta.env.VITE_RAPTOR_MINI === "true";
+    fetch("/api/config")
+      .then((r) => r.json())
+      .then((c) =>
+        setConfig({ raptor_mini: c.raptor_mini || clientFlag, env: c.env })
+      )
+      .catch(() => {
+        setConfig({ ...config, raptor_mini: clientFlag });
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle navigation click
   const handleNavClick = (id: "home" | "about" | "projects") => {
@@ -58,6 +77,21 @@ function App() {
             JKBG
           </div>
           <span className="company-name">Construction</span>
+          {config.raptor_mini && (
+            <span
+              style={{
+                marginLeft: 8,
+                background: "#ffefc7",
+                color: "#7a4c0b",
+                padding: "2px 8px",
+                borderRadius: 6,
+                fontSize: 11,
+                fontWeight: 700,
+              }}
+            >
+              Raptor mini (Preview)
+            </span>
+          )}
         </div>
         <nav className={`nav-menu ${menuOpen ? "nav-menu-open" : ""}`}>
           <button

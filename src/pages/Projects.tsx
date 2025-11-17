@@ -420,7 +420,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
                   <img
                     src={selectedProject.image}
                     alt={selectedProject.title}
-                    style={{ width: "100%", borderRadius: 8, marginBottom: 12 }}
+                    className="modal-img"
                   />
                 )}
                 <h2 style={{ marginTop: 0 }}>{selectedProject.title}</h2>

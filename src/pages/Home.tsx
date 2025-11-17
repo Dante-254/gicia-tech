@@ -105,57 +105,63 @@ function Home() {
               marginBottom: 32,
             }}
           >
-          {[
-            {
-              icon: "🏗️",
-              name: "Architectural designs",
-              desc: "Expert design solutions",
-            },
-            {
-              icon: "📐",
-              name: "Structural designs",
-              desc: "Strong foundations",
-            },
-            { icon: "📊", name: "Bill of quantities", desc: "Cost estimation" },
-            {
-              icon: "📋",
-              name: "Plan Approvals",
-              desc: "Regulatory compliance",
-            },
-            {
-              icon: "👷",
-              name: "Project Management",
-              desc: "Efficient delivery",
-            },
-            { icon: "🏢", name: "Contractor", desc: "Quality construction" },
-            { icon: "💼", name: "Consultancy", desc: "Expert guidance" },
-            {
-              icon: "🔨",
-              name: "General construction",
-              desc: "Diverse projects",
-            },
-            { icon: "⚡", name: "Electrical works", desc: "Safe systems" },
-          ].map((service, idx) => (
-            <div key={idx} className="service-card">
-              <div style={{ fontSize: "2.4rem", marginBottom: "8px" }}>
-                {service.icon}
+            {[
+              {
+                icon: "🏗️",
+                name: "Architectural designs",
+                desc: "Expert design solutions",
+              },
+              {
+                icon: "📐",
+                name: "Structural designs",
+                desc: "Strong foundations",
+              },
+              {
+                icon: "📊",
+                name: "Bill of quantities",
+                desc: "Cost estimation",
+              },
+              {
+                icon: "📋",
+                name: "Plan Approvals",
+                desc: "Regulatory compliance",
+              },
+              {
+                icon: "👷",
+                name: "Project Management",
+                desc: "Efficient delivery",
+              },
+              { icon: "🏢", name: "Contractor", desc: "Quality construction" },
+              { icon: "💼", name: "Consultancy", desc: "Expert guidance" },
+              {
+                icon: "🔨",
+                name: "General construction",
+                desc: "Diverse projects",
+              },
+              { icon: "⚡", name: "Electrical works", desc: "Safe systems" },
+            ].map((service, idx) => (
+              <div key={idx} className="service-card">
+                <div style={{ fontSize: "2.4rem", marginBottom: "8px" }}>
+                  {service.icon}
+                </div>
+                <h3
+                  style={{
+                    margin: "0 0 4px 0",
+                    color: "#222",
+                    fontSize: "1.05rem",
+                  }}
+                >
+                  {service.name}
+                </h3>
+                <p style={{ margin: 0, color: "#666", fontSize: "0.85rem" }}>
+                  {service.desc}
+                </p>
               </div>
-              <h3
-                style={{
-                  margin: "0 0 4px 0",
-                  color: "#222",
-                  fontSize: "1.05rem",
-                }}
-              >
-                {service.name}
-              </h3>
-              <p style={{ margin: 0, color: "#666", fontSize: "0.85rem" }}>
-                {service.desc}
-              </p>
-            </div>
-          ))}
+            ))}
           </div>
-          <h2 style={{ color: "#111", margin: "32px 0 18px 0", fontWeight: 700 }}>
+          <h2
+            style={{ color: "#111", margin: "32px 0 18px 0", fontWeight: 700 }}
+          >
             Featured Projects
           </h2>
           <div
@@ -166,57 +172,36 @@ function Home() {
               marginBottom: 24,
             }}
           >
-          {featuredProjects.map((project: Project) => (
-            <div
-              key={project.id}
-              style={{
-                padding: 12,
-                borderRadius: 8,
-                background: "#f7f7fa",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              {project.image && (
-                <img
-                  src={project.image}
-                  alt={project.title}
+            {featuredProjects.map((project: Project) => (
+              <div key={project.id} className="project-card">
+                {project.image && (
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="project-img"
+                    style={{ maxHeight: 120, marginBottom: 8 }}
+                  />
+                )}
+                <h3 style={{ margin: "8px 0 0 0", textAlign: "center" }}>
+                  {project.title}
+                </h3>
+                <span
                   style={{
-                    width: "100%",
-                    maxHeight: 120,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                    marginBottom: 8,
+                    padding: "4px 12px",
+                    borderRadius: 12,
+                    background:
+                      project.status === "Available" ? "#d1fae5" : "#fee2e2",
+                    color:
+                      project.status === "Available" ? "#065f46" : "#991b1b",
+                    fontWeight: 600,
+                    marginTop: 6,
                   }}
-                />
-              )}
-              <h3
-                style={{
-                  margin: "8px 0 0 0",
-                  color: "#222",
-                  textAlign: "center",
-                  fontSize: "1.1rem",
-                }}
-              >
-                {project.title}
-              </h3>
-              <span
-                style={{
-                  padding: "4px 12px",
-                  borderRadius: 12,
-                  background:
-                    project.status === "Available" ? "#d1fae5" : "#fee2e2",
-                  color: project.status === "Available" ? "#065f46" : "#991b1b",
-                  fontWeight: 600,
-                  marginTop: 6,
-                }}
-              >
-                {project.status}
-              </span>
-            </div>
-          ))}
+                >
+                  {project.status}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

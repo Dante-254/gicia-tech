@@ -946,9 +946,13 @@ a {
 }
 
 .site-header {
-  background: rgba(249, 116, 21, 0.88);
-  color: white;
-  backdrop-filter: blur(12px);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(249, 116, 21, 0.06)
+  );
+  color: var(--text-dark);
+  backdrop-filter: blur(8px);
   padding: 0 16px;
   position: fixed;
   top: 0;
@@ -965,12 +969,22 @@ a {
 
 [data-theme="dark"] .site-header {
   background: rgba(35, 35, 35, 0.95);
+  color: white;
   border-bottom: 1px solid rgba(249, 116, 21, 0.4);
+}
+
+[data-theme="dark"] .logo,
+[data-theme="dark"] .company-name,
+[data-theme="dark"] .nav-item,
+[data-theme="dark"] .btn-icon,
+[data-theme="dark"] .dark-toggle,
+[data-theme="dark"] .hamburger {
+  color: white;
 }
 
 .logo {
   font-weight: 900;
-  color: white;
+  color: var(--text-dark);
   font-size: 1.4rem;
   letter-spacing: 1.5px;
   cursor: pointer;
@@ -990,14 +1004,14 @@ a {
 }
 
 .company-name {
-  color: white;
+  color: var(--text-dark);
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
   opacity: 1;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  border-left: 2px solid rgba(255, 255, 255, 0.4);
+  border-left: 2px solid rgba(0, 0, 0, 0.06);
   padding-left: 10px;
 }
 
@@ -1018,7 +1032,7 @@ a {
 .nav-item {
   background: transparent;
   border: none;
-  color: white;
+  color: var(--text-dark);
   cursor: pointer;
   padding: 12px 18px;
   border-radius: 4px;
@@ -1046,7 +1060,7 @@ a {
 .btn-icon {
   background: transparent;
   border: none;
-  color: white;
+  color: var(--text-dark);
   cursor: pointer;
   padding: 10px 16px;
   border-radius: 4px;
@@ -1068,7 +1082,7 @@ a {
 .dark-toggle {
   background: transparent;
   border: none;
-  color: white;
+  color: var(--text-dark);
   cursor: pointer;
   padding: 10px 14px;
   border-radius: 4px;
@@ -1089,7 +1103,7 @@ a {
   display: none;
   background: transparent;
   border: none;
-  color: white;
+  color: var(--text-dark);
   font-size: 1.6rem;
   cursor: pointer;
   padding: 8px 12px;
@@ -1212,7 +1226,7 @@ a {
 
   .hamburger {
     display: block;
-    order: 3;
+    order: 100;
   }
 }
 

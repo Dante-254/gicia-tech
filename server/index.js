@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import morgan from "morgan";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import path from "path";
@@ -11,11 +14,26 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
+app.use(cors({ origin: FRONTEND_ORIGIN }));
+app.use(helmet());
+app.use(morgan(process.env.LOG_FORMAT || "combined"));
+
+// Basic rate limiter to protect against brute-force and abuse
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: process.env.RATE_LIMIT_MAX ? Number(process.env.RATE_LIMIT_MAX) : 120, // default 120 requests/min
+});
+app.use(limiter);
 app.use(express.json({ limit: "10mb" }));
 
 const DB_FILE = path.join(__dirname, "db.json");
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
+if (JWT_SECRET === "change_this_secret") {
+  console.warn(
+    "Warning: Using default JWT_SECRET. For production, set a strong JWT_SECRET environment variable."
+  );
+}
 
 function loadDB() {
   try {
@@ -165,6 +183,22 @@ app.get("/api/projects", (req, res) => {
   const db = loadDB();
   const rows = (db.projects || []).slice().reverse();
   res.json(rows);
+});
+
+// Expose config/feature flags to public clients
+app.get("/api/config", (req, res) => {
+  res.json({
+    raptor_mini: process.env.RAPTOR_MINI === "true",
+    env: process.env.NODE_ENV || "development",
+  });
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    ok: true,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
 app.post("/api/superusers", async (req, res) => {
