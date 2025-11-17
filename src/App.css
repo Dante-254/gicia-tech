@@ -1248,3 +1248,14 @@ a {
     padding: 12px 18px;
   }
 }
+
+/* Force white text in dark mode for all textual elements */
+[data-theme="dark"],
+[data-theme="dark"] * {
+  color: #ffffff !important;
+}
+
+/* Keep placeholders slightly muted but readable */
+[data-theme="dark"] ::placeholder {
+  color: #bdbdbd !important;
+}

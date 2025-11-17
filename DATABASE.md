@@ -186,6 +186,20 @@ RAPTOR_MINI=false
 - For larger deployments, use MongoDB, PostgreSQL, or MySQL
 - Provides better scalability and security
 
+### Using MongoDB Atlas + Cloudinary (Recommended)
+
+1. Create a MongoDB Atlas free-tier cluster and obtain the connection string (MONGO_URI). Example:
+  `mongodb+srv://<user>:<pw>@cluster0.mongodb.net/databasename?retryWrites=true&w=majority`
+2. Create a Cloudinary account and get your `CLOUDINARY_URL` (like `cloudinary://api_key:api_secret@cloud_name`).
+3. Set environment variables on your production host:
+  ```bash
+  MONGO_URI="<your mongodb uri>"
+  CLOUDINARY_URL="cloudinary://<api>:<secret>@<name>"
+  JWT_SECRET="super-secret-value"
+  FRONTEND_ORIGIN="https://your-frontend-url"
+  ```
+4. With these set, the backend will use MongoDB for projects and upload images to Cloudinary (if configured).
+
 ---
 
 ## Troubleshooting

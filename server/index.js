@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import path from "path";
 import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
 import { fileURLToPath } from "url";
 import fs from "fs";
 
@@ -75,6 +76,20 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+
+// Configure Cloudinary if environment variables are present
+if (
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  console.log("Cloudinary configured: uploads will be forwarded to Cloudinary");
+}
 
 // Seed projects from images if empty
 function seedProjectsIfEmpty() {
@@ -260,6 +275,31 @@ app.post("/api/projects", authenticate, (req, res) => {
 // Accept image field name from the frontend (fd.append('image', file))
 app.post("/api/upload", authenticate, upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file" });
+  // If Cloudinary is configured, upload the saved file and remove local copy
+  if (
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
+  ) {
+    const filePath = req.file.path;
+    cloudinary.uploader
+      .upload(filePath, { folder: "jkbg-projects" })
+      .then((result) => {
+        try {
+          // remove local file
+          fs.unlinkSync(filePath);
+        } catch (err) {
+          console.warn("Failed to remove local upload:", err.message);
+        }
+        res.json({ url: result.secure_url, provider: "cloudinary" });
+      })
+      .catch((err) => {
+        console.error("Cloudinary upload failed:", err);
+        res.status(500).json({ error: "Upload failed" });
+      });
+    return;
+  }
+
   const url = `/project-images/${req.file.filename}`;
   res.json({ url });
 });
