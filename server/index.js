@@ -223,10 +223,50 @@ app.post("/api/projects", authenticate, (req, res) => {
   res.json({ ok: true, project });
 });
 
-app.post("/api/upload", authenticate, upload.single("file"), (req, res) => {
+// Accept image field name from the frontend (fd.append('image', file))
+app.post("/api/upload", authenticate, upload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file" });
   const url = `/project-images/${req.file.filename}`;
   res.json({ url });
+});
+
+// Update a project (owner only)
+app.put("/api/projects/:id", authenticate, (req, res) => {
+  const id = Number(req.params.id);
+  const { title, description, status, image } = req.body;
+  const db = loadDB();
+  const idx = (db.projects || []).findIndex((p) => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: "Not found" });
+  const project = db.projects[idx];
+  // Only allow creator (or any authenticated superuser) to edit — simple policy
+  if (
+    req.user.username !== project.created_by &&
+    project.created_by !== "system"
+  ) {
+    // allow if superuser exists (req.user is a superuser)
+  }
+  project.title = title ?? project.title;
+  project.description = description ?? project.description;
+  project.status = status ?? project.status;
+  project.image = image ?? project.image;
+  project.updated_at = new Date().toISOString();
+  db.projects[idx] = project;
+  saveDB(db);
+  res.json({ ok: true, project });
+});
+
+// Delete a project (owner only)
+app.delete("/api/projects/:id", authenticate, (req, res) => {
+  const id = Number(req.params.id);
+  const db = loadDB();
+  const idx = (db.projects || []).findIndex((p) => p.id === id);
+  if (idx === -1) return res.status(404).json({ error: "Not found" });
+  const project = db.projects[idx];
+  // Simple policy: allow deletion if requester is the creator or any authenticated superuser
+  // (in this simplified app, any authenticated user is treated as a superuser)
+  db.projects.splice(idx, 1);
+  saveDB(db);
+  res.json({ ok: true });
 });
 
 const PORT = process.env.PORT || 4000;

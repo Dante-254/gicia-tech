@@ -15,7 +15,16 @@ function Home() {
   useEffect(() => {
     fetch("http://localhost:4000/api/projects")
       .then((res) => res.json())
-      .then((data) => setFeaturedProjects(data.slice(0, 3)))
+      .then((data) => {
+        // Convert ALL project images to absolute URLs and encode them
+        const projects = data.map((p: Project) => ({
+          ...p,
+          image: p.image.startsWith("http")
+            ? p.image
+            : `http://localhost:4000${encodeURI(p.image)}`,
+        }));
+        setFeaturedProjects(projects);
+      })
       .catch((err) => console.error("Failed to fetch projects:", err));
   }, []);
 
@@ -72,50 +81,91 @@ function Home() {
       <div
         id="services"
         style={{
-          maxWidth: 700,
-          margin: "0 auto",
+          width: "100vw",
+          marginLeft: "calc(50% - 50vw)",
           padding: "32px 16px",
           background: "#fff",
-          borderRadius: 12,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
         }}
       >
-        <h2 style={{ color: "#111", marginBottom: 18, fontWeight: 700 }}>
-          Our Services
-        </h2>
         <div
           style={{
-            color: "#222",
-            fontSize: "1.1rem",
-            lineHeight: 2,
-            paddingLeft: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            marginBottom: 32,
+            maxWidth: 1200,
+            margin: "0 auto",
+            padding: "0",
           }}
         >
-          <div>Architectural designs</div>
-          <div>Structural designs</div>
-          <div>Bill of quantities</div>
-          <div>Plan Approvals</div>
-          <div>Project Management</div>
-          <div>Contractor</div>
-          <div>Consultancy</div>
-          <div>General construction</div>
-          <div>Electrical works</div>
-        </div>
-        <h2 style={{ color: "#111", margin: "32px 0 18px 0", fontWeight: 700 }}>
-          Featured Projects
-        </h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "20px",
-            marginBottom: 24,
-          }}
-        >
+          <h2 style={{ color: "#111", marginBottom: 24, fontWeight: 700 }}>
+            Our Services
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "16px",
+              marginBottom: 32,
+            }}
+          >
+          {[
+            {
+              icon: "🏗️",
+              name: "Architectural designs",
+              desc: "Expert design solutions",
+            },
+            {
+              icon: "📐",
+              name: "Structural designs",
+              desc: "Strong foundations",
+            },
+            { icon: "📊", name: "Bill of quantities", desc: "Cost estimation" },
+            {
+              icon: "📋",
+              name: "Plan Approvals",
+              desc: "Regulatory compliance",
+            },
+            {
+              icon: "👷",
+              name: "Project Management",
+              desc: "Efficient delivery",
+            },
+            { icon: "🏢", name: "Contractor", desc: "Quality construction" },
+            { icon: "💼", name: "Consultancy", desc: "Expert guidance" },
+            {
+              icon: "🔨",
+              name: "General construction",
+              desc: "Diverse projects",
+            },
+            { icon: "⚡", name: "Electrical works", desc: "Safe systems" },
+          ].map((service, idx) => (
+            <div key={idx} className="service-card">
+              <div style={{ fontSize: "2.4rem", marginBottom: "8px" }}>
+                {service.icon}
+              </div>
+              <h3
+                style={{
+                  margin: "0 0 4px 0",
+                  color: "#222",
+                  fontSize: "1.05rem",
+                }}
+              >
+                {service.name}
+              </h3>
+              <p style={{ margin: 0, color: "#666", fontSize: "0.85rem" }}>
+                {service.desc}
+              </p>
+            </div>
+          ))}
+          </div>
+          <h2 style={{ color: "#111", margin: "32px 0 18px 0", fontWeight: 700 }}>
+            Featured Projects
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "20px",
+              marginBottom: 24,
+            }}
+          >
           {featuredProjects.map((project: Project) => (
             <div
               key={project.id}

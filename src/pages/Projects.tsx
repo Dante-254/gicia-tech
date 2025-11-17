@@ -6,6 +6,8 @@ type Project = {
   description: string;
   status: string;
   image: string;
+  created_by?: string;
+  created_at?: string;
 };
 
 // type ProjectsProps = {
@@ -27,15 +29,21 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("jkbg_token")
-  );
 
   // Fetch projects from backend API
   useEffect(() => {
     fetch("http://localhost:4000/api/projects")
       .then((res) => res.json())
-      .then((data) => setProjects(data))
+      .then((data) => {
+        // Convert relative image URLs to absolute and encode
+        const projects = data.map((p: Project) => ({
+          ...p,
+          image: p.image.startsWith("http")
+            ? p.image
+            : `http://localhost:4000${encodeURI(p.image)}`,
+        }));
+        setProjects(projects);
+      })
       .catch((err) => console.error("Failed to fetch projects:", err));
   }, []);
 
@@ -79,11 +87,10 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
       body: JSON.stringify(loginForm),
     });
     const data = await res.json();
-    if (data.success) {
-      setSuperUser(data.user.username);
-      setToken(data.token);
+    if (data.token && data.username) {
+      setSuperUser(data.username);
       localStorage.setItem("jkbg_token", data.token);
-      localStorage.setItem("jkbg_user", data.user.username);
+      localStorage.setItem("jkbg_user", data.username);
       setLoginForm({ username: "", password: "" });
       setShowLoginModal(false);
     } else {
@@ -107,264 +114,268 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
       body: JSON.stringify({ ...form }),
     });
     if (res.ok) {
-      const newProject = await res.json();
-      setProjects([...projects, newProject]);
+      const data = await res.json();
+      if (data.project) {
+        setProjects([...projects, data.project]);
+      }
       setForm({ title: "", description: "", status: "Available", image: "" });
       setShowForm(false);
     }
   };
 
+  // Modal and edit/delete state
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    status: "",
+    image: "",
+  });
+
+  const openProject = (p: Project) => {
+    setSelectedProject(p);
+    setIsEditing(false);
+    setEditForm({
+      title: p.title,
+      description: p.description,
+      status: p.status,
+      image: p.image,
+    });
+  };
+
+  const closeModal = () => {
+    setSelectedProject(null);
+    setIsEditing(false);
+  };
+
+  const handleStartEdit = () => {
+    if (!selectedProject) return;
+    setIsEditing(true);
+    setEditForm({
+      title: selectedProject.title,
+      description: selectedProject.description,
+      status: selectedProject.status,
+      image: selectedProject.image,
+    });
+  };
+
+  const handleUpdate = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!selectedProject) return;
+    const res = await fetch(
+      `http://localhost:4000/api/projects/${selectedProject.id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+        },
+        body: JSON.stringify(editForm),
+      }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data.project) {
+        setProjects((prev) =>
+          prev.map((p) => (p.id === data.project.id ? data.project : p))
+        );
+        setSelectedProject(data.project);
+        setIsEditing(false);
+      }
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedProject) return;
+    if (!confirm("Delete this project? This cannot be undone.")) return;
+    const res = await fetch(
+      `http://localhost:4000/api/projects/${selectedProject.id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+        },
+      }
+    );
+    if (res.ok) {
+      setProjects((prev) => prev.filter((p) => p.id !== selectedProject.id));
+      closeModal();
+    }
+  };
+
   return (
-    <div
-      style={{
-        maxWidth: 700,
-        margin: "0 auto",
-        padding: "32px 16px",
-        background: "#fff",
-        borderRadius: 12,
-      }}
-    >
-      <h2 style={{ color: "#111", marginBottom: 18, fontWeight: 700 }}>
-        Projects
-      </h2>
-      {!superUser ? (
-        <>
+    <div className="page-container projects-container">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
+        <h2 style={{ color: "#111", margin: 0, fontWeight: 700 }}>Projects</h2>
+        {!superUser ? (
           <button
             className="btn-primary"
-            style={{ marginBottom: 20 }}
             onClick={() => setShowLoginModal(true)}
-          >
-            Login as Owner
-          </button>
-          <div style={{ marginBottom: 12, color: "#666", fontSize: "0.95rem" }}>
-            Superuser accounts must be created in the backend (server) by the
-            owner.
-          </div>
-          {showLoginModal && (
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                width: "100vw",
-                height: "100vh",
-                background: "rgba(0,0,0,0.15)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 1000,
-              }}
-            >
-              <form
-                onSubmit={handleLogin}
-                style={{
-                  background: "#fff",
-                  padding: 32,
-                  borderRadius: 12,
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-                  minWidth: 320,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <h3 style={{ marginBottom: 18, color: "#222" }}>
-                  Superuser Login
-                </h3>
-                <input
-                  name="username"
-                  value={loginForm.username}
-                  onChange={(e) =>
-                    setLoginForm({ ...loginForm, username: e.target.value })
-                  }
-                  placeholder="Superuser Username"
-                  required
-                  style={{
-                    display: "block",
-                    marginBottom: 10,
-                    padding: 8,
-                    width: "100%",
-                    borderRadius: 4,
-                    border: "1px solid #d1d5db",
-                  }}
-                />
-                <input
-                  name="password"
-                  type="password"
-                  value={loginForm.password}
-                  onChange={(e) =>
-                    setLoginForm({ ...loginForm, password: e.target.value })
-                  }
-                  placeholder="Password"
-                  required
-                  style={{
-                    display: "block",
-                    marginBottom: 10,
-                    padding: 8,
-                    width: "100%",
-                    borderRadius: 4,
-                    border: "1px solid #d1d5db",
-                  }}
-                />
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  style={{ marginBottom: 8, width: "100%" }}
-                >
-                  Login
-                </button>
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  onClick={() => setShowLoginModal(false)}
-                >
-                  Cancel
-                </button>
-                {loginError && (
-                  <div style={{ color: "#991b1b", marginTop: 8 }}>
-                    {loginError}
-                  </div>
-                )}
-              </form>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          <div
             style={{
-              marginBottom: 12,
-              fontWeight: 600,
-              color: "#065f46",
+              padding: "10px 16px",
+              fontSize: "1.2rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            Logged in as: {superUser}
-          </div>
+            🔐 Login
+          </button>
+        ) : (
           <button
-            className="btn-secondary"
-            style={{ marginBottom: 12 }}
+            className="btn-primary"
+            onClick={() => setShowForm(!showForm)}
+            style={{ padding: "10px 16px", fontSize: "1.4rem" }}
+            title="Add new project"
+          >
+            {showForm ? "✕" : "+"}
+          </button>
+        )}
+      </div>
+
+      {superUser && (
+        <div className="owner-banner">
+          <span>✓ Logged in as: {superUser}</span>
+          <button
+            className="owner-logout-btn btn-secondary"
             onClick={() => {
               setSuperUser("");
-              setToken(null);
               localStorage.removeItem("jkbg_token");
               localStorage.removeItem("jkbg_user");
             }}
           >
             Logout
           </button>
-          <button
-            className="btn-primary"
-            style={{ marginBottom: 20 }}
-            onClick={() => setShowForm(!showForm)}
-          >
-            {showForm ? "Cancel" : "Add New Project"}
-          </button>
-          {showForm && (
-            <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
+        </div>
+      )}
+
+      {!superUser && (
+        <div style={{ marginBottom: 12, color: "#666", fontSize: "0.95rem" }}>
+          Superuser accounts must be created in the backend (server) by the
+          owner.
+        </div>
+      )}
+
+      {showLoginModal && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setShowLoginModal(false)}
+        >
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <form onSubmit={handleLogin}>
+              <h3>Superuser Login</h3>
               <input
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                placeholder="Project Title"
+                className="form-input"
+                name="username"
+                value={loginForm.username}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, username: e.target.value })
+                }
+                placeholder="Superuser Username"
                 required
-                style={{
-                  display: "block",
-                  marginBottom: 10,
-                  padding: 8,
-                  width: "100%",
-                  borderRadius: 4,
-                  border: "1px solid #d1d5db",
-                }}
               />
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                placeholder="Project Description"
-                required
-                style={{
-                  display: "block",
-                  marginBottom: 10,
-                  padding: 8,
-                  width: "100%",
-                  borderRadius: 4,
-                  border: "1px solid #d1d5db",
-                }}
-              />
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                style={{
-                  display: "block",
-                  marginBottom: 10,
-                  padding: 8,
-                  width: "100%",
-                  borderRadius: 4,
-                  border: "1px solid #d1d5db",
-                }}
-              >
-                <option value="Available">Available</option>
-                <option value="Sold">Sold</option>
-              </select>
               <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                style={{ display: "block", marginBottom: 10 }}
+                className="form-input"
+                name="password"
+                type="password"
+                value={loginForm.password}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, password: e.target.value })
+                }
+                placeholder="Password"
+                required
               />
               <button
                 type="submit"
-                style={{
-                  padding: "8px 16px",
-                  fontWeight: 600,
-                  background: "#61dafb",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                  color: "#222",
-                }}
+                className="btn-primary"
+                style={{ width: "100%", marginBottom: 8 }}
               >
-                Post Project
+                Login
               </button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setShowLoginModal(false)}
+              >
+                Cancel
+              </button>
+              {loginError && (
+                <div style={{ color: "#991b1b", marginTop: 8 }}>
+                  {loginError}
+                </div>
+              )}
             </form>
-          )}
-        </>
+          </div>
+        </div>
       )}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-          gap: "20px",
-        }}
-      >
+
+      {showForm && superUser && (
+        <form onSubmit={handleSubmit} className="form-panel">
+          <h3>Add New Project</h3>
+          <input
+            className="form-input"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            placeholder="Project Title"
+            required
+          />
+          <textarea
+            className="form-textarea"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Project Description"
+            required
+          />
+          <select
+            className="form-select"
+            name="status"
+            value={form.status}
+            onChange={handleChange}
+          >
+            <option value="Available">Available</option>
+            <option value="Sold">Sold</option>
+          </select>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{ display: "block", marginBottom: 10 }}
+          />
+          <button
+            type="submit"
+            className="btn-primary"
+            style={{ width: "100%" }}
+          >
+            Post Project
+          </button>
+        </form>
+      )}
+
+      <div className="project-grid">
         {projects.length === 0 ? (
           <p>No projects posted yet.</p>
         ) : (
           projects.map((project: Project) => (
             <div
               key={project.id}
-              style={{
-                padding: 16,
-                borderRadius: 8,
-                background: "#f7f7fa",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
+              className="project-card"
+              onClick={() => openProject(project)}
             >
               {project.image && (
                 <img
                   src={project.image}
                   alt={project.title}
-                  style={{
-                    width: "100%",
-                    maxHeight: 180,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                    marginBottom: 12,
-                  }}
+                  className="project-img"
                 />
               )}
               <h3
@@ -398,6 +409,114 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
           ))
         )}
       </div>
+
+      {/* Project details modal */}
+      {selectedProject && (
+        <div className="modal-backdrop" onClick={closeModal}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            {!isEditing ? (
+              <div>
+                {selectedProject.image && (
+                  <img
+                    src={selectedProject.image}
+                    alt={selectedProject.title}
+                    style={{ width: "100%", borderRadius: 8, marginBottom: 12 }}
+                  />
+                )}
+                <h2 style={{ marginTop: 0 }}>{selectedProject.title}</h2>
+                <p>{selectedProject.description}</p>
+                <p>
+                  <strong>Status:</strong> {selectedProject.status}
+                </p>
+                <p>
+                  <strong>Created By:</strong>{" "}
+                  {selectedProject.created_by ?? "Unknown"}
+                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    marginTop: 12,
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  {superUser && (
+                    <>
+                      <button
+                        className="btn-secondary"
+                        onClick={handleStartEdit}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn-secondary"
+                        onClick={handleDelete}
+                        style={{
+                          background: "#fee2e2",
+                          borderColor: "#fca5a5",
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  <button className="btn-primary" onClick={closeModal}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleUpdate}>
+                <input
+                  name="title"
+                  value={editForm.title}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, title: e.target.value })
+                  }
+                  style={{ width: "100%", padding: 8, marginBottom: 8 }}
+                />
+                <textarea
+                  name="description"
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, description: e.target.value })
+                  }
+                  style={{ width: "100%", padding: 8, marginBottom: 8 }}
+                />
+                <select
+                  name="status"
+                  value={editForm.status}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, status: e.target.value })
+                  }
+                  style={{ width: "100%", padding: 8, marginBottom: 8 }}
+                >
+                  <option value="Available">Available</option>
+                  <option value="Sold">Sold</option>
+                </select>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-primary">
+                    Save
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

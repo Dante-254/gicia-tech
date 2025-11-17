@@ -1,11 +1,11 @@
 function About() {
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 16px" }}>
-      <h2 style={{ color: "#111", marginBottom: 18, fontWeight: 700 }}>
+    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 16px" }}>
+      <h2 style={{ color: "#111", marginBottom: 24, fontWeight: 700 }}>
         About JKBG Construction Company Ltd
       </h2>
 
-      <div className="about-grid">
+      <div className="about-grid-fullwidth">
         <div className="about-box">
           <h3 style={{ marginTop: 0 }}>Who we are</h3>
           <p style={{ color: "#444", lineHeight: 1.6 }}>
