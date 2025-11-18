@@ -220,17 +220,28 @@ function authenticate(req, res, next) {
 
 // Routes
 app.get("/api/projects", async (req, res) => {
-  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
   try {
-    const { data, error } = await supabase.from('projects').select('*').order('id', { ascending: false });
-    if (error) {
-      console.error('Supabase read error:', error);
-      return res.status(500).json({ error: 'Failed to read projects' });
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .order("id", { ascending: false });
+      if (error) {
+        console.error("Supabase read error:", error);
+        return res.status(500).json({ error: "Failed to read projects" });
+      }
+      return res.json(data || []);
     }
-    return res.json(data || []);
+
+    // Development fallback to local JSON DB
+    const db = loadDB();
+    const projects = (db.projects || [])
+      .slice()
+      .sort((a, b) => (b.id || 0) - (a.id || 0));
+    return res.json(projects);
   } catch (err) {
-    console.error('Projects handler error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error("Projects handler error:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -255,9 +266,13 @@ app.post("/api/superusers", async (req, res) => {
   if (!username || !password)
     return res.status(400).json({ error: "Missing fields" });
   try {
-    if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
+    if (!supabase)
+      return res.status(500).json({ error: "Supabase not configured" });
     const hash = await bcrypt.hash(password, 10);
-    const { data, error } = await supabase.from('superusers').insert([{ username, password_hash: hash }]).select();
+    const { data, error } = await supabase
+      .from("superusers")
+      .insert([{ username, password_hash: hash }])
+      .select();
     if (error) return res.status(400).json({ error: error.message || error });
     return res.json({ ok: true, user: data && data[0] });
   } catch (err) {
@@ -271,13 +286,39 @@ app.post("/api/superusers/login", async (req, res) => {
   if (!username || !password)
     return res.status(400).json({ error: "Missing fields" });
   try {
-    if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
-    const { data, error } = await supabase.from('superusers').select('*').eq('username', username).limit(1).single();
-    if (error || !data) return res.status(401).json({ error: 'Invalid credentials' });
-    const ok = await bcrypt.compare(password, data.password_hash);
-    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = jwt.sign({ username: data.username, id: data.id }, JWT_SECRET, { expiresIn: '8h' });
-    return res.json({ token, username: data.username });
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("superusers")
+        .select("*")
+        .eq("username", username)
+        .limit(1)
+        .single();
+      if (error || !data)
+        return res.status(401).json({ error: "Invalid credentials" });
+      const ok = await bcrypt.compare(password, data.password_hash);
+      if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+      const token = jwt.sign(
+        { username: data.username, id: data.id },
+        JWT_SECRET,
+        { expiresIn: "8h" }
+      );
+      return res.json({ token, username: data.username });
+    }
+
+    // Local fallback for development
+    const db = loadDB();
+    const user = (db.superusers || []).find((s) => s.username === username);
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+    const ok = await bcrypt.compare(password, user.password_hash);
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+    const token = jwt.sign(
+      { username: user.username, id: user.id },
+      JWT_SECRET,
+      {
+        expiresIn: "8h",
+      }
+    );
+    res.json({ token, username: user.username });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error" });
