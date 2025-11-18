@@ -55,6 +55,24 @@ Quick deploy steps (frontend only)
 4. Add environment variables (Vite client vars must be prefixed with `VITE_` if you need them exposed to the browser).
 5. Deploy.
 
+**Checklist — Vercel (frontend) + Render (backend)**
+
+- **Vercel (Frontend)**:
+
+  - `VITE_API_BASE`: Set to your backend base URL (e.g. `https://your-backend.onrender.com`).
+  - Any other `VITE_` prefixed runtime flags you need exposed to the browser.
+  - Redeploy after adding/modifying environment variables.
+
+- **Render (Backend)**:
+  - `JWT_SECRET`: Strong secret for signing JWTs.
+  - `FRONTEND_ORIGIN`: Your frontend origin (e.g. `https://your-site.vercel.app`). Can be a comma-separated list of allowed origins.
+  - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (if using Cloudinary uploads).
+  - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (if using Supabase in production).
+  - Ensure `NODE_ENV=production` is set on the host for production behavior.
+  - Do **not** commit secrets to the repo; set them in Render's environment settings.
+
+Important: If `VITE_API_BASE` is not set on the frontend, the site will try to call `/api/*` on the frontend host which will result in failed requests and blank content. Set `VITE_API_BASE` to the backend URL and redeploy the frontend to resolve blank pages.
+
 If you'd like, I can:
 
 - Convert the backend to Vercel serverless functions (split endpoints into `/api/*` files).

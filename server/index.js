@@ -16,8 +16,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// FRONTEND_ORIGIN may be a comma-separated list of allowed origins.
+// In non-production we allow any origin to simplify local development.
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
-app.use(cors({ origin: FRONTEND_ORIGIN }));
+const _allowedOrigins = String(FRONTEND_ORIGIN)
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+function corsOriginChecker(origin, callback) {
+  // allow non-browser requests (curl, server-side) or same-origin
+  if (!origin) return callback(null, true);
+  // in development allow any origin
+  if (process.env.NODE_ENV !== "production") return callback(null, true);
+  // allow wildcard
+  if (_allowedOrigins.includes("*")) return callback(null, true);
+  if (_allowedOrigins.includes(origin)) return callback(null, true);
+  return callback(new Error("Not allowed by CORS"), false);
+}
+app.use(cors({ origin: corsOriginChecker }));
 app.use(helmet());
 app.use(morgan(process.env.LOG_FORMAT || "combined"));
 
