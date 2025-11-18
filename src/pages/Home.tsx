@@ -90,7 +90,6 @@ function Home() {
           width: "100vw",
           marginLeft: "calc(50% - 50vw)",
           padding: "32px 16px",
-          background: "#fff",
         }}
       >
         <div
@@ -104,6 +103,7 @@ function Home() {
             Our Services
           </h2>
           <div
+            className="services-section"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
@@ -153,13 +153,19 @@ function Home() {
                 <h3
                   style={{
                     margin: "0 0 4px 0",
-                    color: "#222",
+                    color: "var(--text-primary, #222)",
                     fontSize: "1.05rem",
                   }}
                 >
                   {service.name}
                 </h3>
-                <p style={{ margin: 0, color: "#666", fontSize: "0.85rem" }}>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "var(--text-secondary, #666)",
+                    fontSize: "0.85rem",
+                  }}
+                >
                   {service.desc}
                 </p>
               </div>
@@ -171,6 +177,7 @@ function Home() {
             Featured Projects
           </h2>
           <div
+            className="featured-projects-section"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",

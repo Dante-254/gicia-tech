@@ -62,3 +62,21 @@ If you'd like, I can:
 - Create a CI workflow and one-click Vercel setup.
 
 **Next step suggestion:** Should I convert `/api/upload` and other endpoints into Vercel-compatible serverless functions, or deploy the backend to a separate service like Render?
+
+Render deployment (recommended for backend)
+
+- Render is a good choice for host­ing the Node/Express backend because it provides a persistent filesystem for now (though using Supabase for DB+storage is still preferred). To deploy to Render:
+
+  1.  Create a new Web Service on Render and connect your GitHub repo.
+  2.  Set the build and start commands: `npm install && npm run build` (if you build server assets) and `npm start` for runtime, or simply `npm start` if no build step is required.
+  3.  Add the required environment variables in Render dashboard:
+      - `JWT_SECRET` (strong secret)
+      - `FRONTEND_ORIGIN` (your frontend origin)
+      - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (if using Cloudinary)
+      - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (if using Supabase)
+      - `PORT` (Render provides a `$PORT` env; server uses `process.env.PORT || 4000`)
+  4.  For persistence: if you rely on `server/db.json` in Render, use automated backups because the instance may be restarted. Better: migrate to Supabase so persistence is external and reliable.
+
+Render will expose your backend at a public URL — set `VITE_API_BASE` in Vercel (or your frontend host) to that URL so the frontend talks to the correct API.
+
+Summary: Use Render for the Express backend and Supabase for the DB/storage. This combination provides a stable, production-ready deployment model.

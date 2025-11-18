@@ -207,7 +207,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   };
 
   return (
-    <div className="page-container projects-container">
+    <div className="page-container projects-grid-container">
       <div
         style={{
           display: "flex",
@@ -229,7 +229,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
               gap: 8,
             }}
           >
-            🔐 Login
+            +
           </button>
         ) : (
           <button
@@ -261,8 +261,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
 
       {!superUser && (
         <div style={{ marginBottom: 12, color: "#666", fontSize: "0.95rem" }}>
-          Superuser accounts must be created in the backend (server) by the
-          owner.
+          
         </div>
       )}
 

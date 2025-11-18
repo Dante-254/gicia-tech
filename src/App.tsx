@@ -167,11 +167,7 @@ function App() {
                   }
                 }}
               >
-                <div className="owner-modal-icon">🔐</div>
                 <h3 className="page-title">Owner Login</h3>
-                <p className="muted-text">
-                  Access owner dashboard and management tools
-                </p>
                 <input
                   className="form-input"
                   type="text"

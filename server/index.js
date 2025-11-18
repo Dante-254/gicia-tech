@@ -10,6 +10,7 @@ import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { createClient } from "@supabase/supabase-js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,6 +90,29 @@ if (
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
   console.log("Cloudinary configured: uploads will be forwarded to Cloudinary");
+}
+
+// Configure Supabase if service role key is present
+let supabase = null;
+if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      auth: { persistSession: false },
+    }
+  );
+  console.log(
+    "Supabase configured: projects and users can be migrated/queried when enabled"
+  );
+}
+
+// In production we require Supabase to be configured. Fail fast if missing.
+if (process.env.NODE_ENV === "production" && !supabase) {
+  console.error(
+    "FATAL: NODE_ENV=production but Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
+  );
+  process.exit(1);
 }
 
 // Seed projects from images if empty
@@ -176,7 +200,8 @@ function seedProjectsIfEmpty() {
   console.log(`Seeded ${files.length} projects`);
 }
 
-seedProjectsIfEmpty();
+// removed local seeding: use Supabase as the single source of truth
+// seedProjectsIfEmpty();
 
 // Auth middleware
 function authenticate(req, res, next) {
@@ -194,10 +219,19 @@ function authenticate(req, res, next) {
 }
 
 // Routes
-app.get("/api/projects", (req, res) => {
-  const db = loadDB();
-  const rows = (db.projects || []).slice().reverse();
-  res.json(rows);
+app.get("/api/projects", async (req, res) => {
+  if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
+  try {
+    const { data, error } = await supabase.from('projects').select('*').order('id', { ascending: false });
+    if (error) {
+      console.error('Supabase read error:', error);
+      return res.status(500).json({ error: 'Failed to read projects' });
+    }
+    return res.json(data || []);
+  } catch (err) {
+    console.error('Projects handler error:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // Expose config/feature flags to public clients
@@ -220,56 +254,81 @@ app.post("/api/superusers", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password)
     return res.status(400).json({ error: "Missing fields" });
-  const db = loadDB();
-  const exists = (db.superusers || []).find((s) => s.username === username);
-  if (exists) return res.status(400).json({ error: "User exists" });
-  const hash = await bcrypt.hash(password, 10);
-  const user = {
-    id: db.superusers.length
-      ? db.superusers[db.superusers.length - 1].id + 1
-      : 1,
-    username,
-    password_hash: hash,
-  };
-  db.superusers.push(user);
-  saveDB(db);
-  res.json({ ok: true });
+  try {
+    if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
+    const hash = await bcrypt.hash(password, 10);
+    const { data, error } = await supabase.from('superusers').insert([{ username, password_hash: hash }]).select();
+    if (error) return res.status(400).json({ error: error.message || error });
+    return res.json({ ok: true, user: data && data[0] });
+  } catch (err) {
+    console.error("Create superuser error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 app.post("/api/superusers/login", async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password)
     return res.status(400).json({ error: "Missing fields" });
-  const db = loadDB();
-  const user = (db.superusers || []).find((s) => s.username === username);
-  if (!user) return res.status(401).json({ error: "Invalid credentials" });
-  const ok = await bcrypt.compare(password, user.password_hash);
-  if (!ok) return res.status(401).json({ error: "Invalid credentials" });
-  const token = jwt.sign({ username: user.username, id: user.id }, JWT_SECRET, {
-    expiresIn: "8h",
-  });
-  res.json({ token, username: user.username });
+  try {
+    if (!supabase) return res.status(500).json({ error: 'Supabase not configured' });
+    const { data, error } = await supabase.from('superusers').select('*').eq('username', username).limit(1).single();
+    if (error || !data) return res.status(401).json({ error: 'Invalid credentials' });
+    const ok = await bcrypt.compare(password, data.password_hash);
+    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+    const token = jwt.sign({ username: data.username, id: data.id }, JWT_SECRET, { expiresIn: '8h' });
+    return res.json({ token, username: data.username });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 app.post("/api/projects", authenticate, (req, res) => {
-  const { title, description, status, image } = req.body;
-  if (!title) return res.status(400).json({ error: "Missing title" });
-  const db = loadDB();
-  const id = db.projects.length
-    ? db.projects[db.projects.length - 1].id + 1
-    : 1;
-  const project = {
-    id,
-    title,
-    description: description || "",
-    status: status || "Available",
-    image: image || null,
-    created_by: req.user.username,
-    created_at: new Date().toISOString(),
-  };
-  db.projects.push(project);
-  saveDB(db);
-  res.json({ ok: true, project });
+  (async () => {
+    try {
+      const { title, description, status, image } = req.body;
+      if (!title) return res.status(400).json({ error: "Missing title" });
+
+      if (supabase) {
+        const row = {
+          title,
+          description: description || "",
+          status: status || "Available",
+          image: image || null,
+          created_by: req.user.username,
+          created_at: new Date().toISOString(),
+        };
+        const { data, error } = await supabase
+          .from("projects")
+          .insert([row])
+          .select();
+        if (error)
+          return res.status(400).json({ error: error.message || error });
+        return res.json({ ok: true, project: data && data[0] });
+      }
+
+      const db = loadDB();
+      const id = db.projects.length
+        ? db.projects[db.projects.length - 1].id + 1
+        : 1;
+      const project = {
+        id,
+        title,
+        description: description || "",
+        status: status || "Available",
+        image: image || null,
+        created_by: req.user.username,
+        created_at: new Date().toISOString(),
+      };
+      db.projects.push(project);
+      saveDB(db);
+      res.json({ ok: true, project });
+    } catch (err) {
+      console.error("Create project error:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  })();
 });
 
 // Accept image field name from the frontend (fd.append('image', file))
@@ -306,41 +365,71 @@ app.post("/api/upload", authenticate, upload.single("image"), (req, res) => {
 
 // Update a project (owner only)
 app.put("/api/projects/:id", authenticate, (req, res) => {
-  const id = Number(req.params.id);
-  const { title, description, status, image } = req.body;
-  const db = loadDB();
-  const idx = (db.projects || []).findIndex((p) => p.id === id);
-  if (idx === -1) return res.status(404).json({ error: "Not found" });
-  const project = db.projects[idx];
-  // Only allow creator (or any authenticated superuser) to edit — simple policy
-  if (
-    req.user.username !== project.created_by &&
-    project.created_by !== "system"
-  ) {
-    // allow if superuser exists (req.user is a superuser)
-  }
-  project.title = title ?? project.title;
-  project.description = description ?? project.description;
-  project.status = status ?? project.status;
-  project.image = image ?? project.image;
-  project.updated_at = new Date().toISOString();
-  db.projects[idx] = project;
-  saveDB(db);
-  res.json({ ok: true, project });
+  (async () => {
+    try {
+      const id = Number(req.params.id);
+      const { title, description, status, image } = req.body;
+
+      if (supabase) {
+        const updates = {
+          title,
+          description,
+          status,
+          image,
+          updated_at: new Date().toISOString(),
+        };
+        const { data, error } = await supabase
+          .from("projects")
+          .update(updates)
+          .eq("id", id)
+          .select();
+        if (error)
+          return res.status(400).json({ error: error.message || error });
+        return res.json({ ok: true, project: data && data[0] });
+      }
+
+      const db = loadDB();
+      const idx = (db.projects || []).findIndex((p) => p.id === id);
+      if (idx === -1) return res.status(404).json({ error: "Not found" });
+      const project = db.projects[idx];
+      project.title = title ?? project.title;
+      project.description = description ?? project.description;
+      project.status = status ?? project.status;
+      project.image = image ?? project.image;
+      project.updated_at = new Date().toISOString();
+      db.projects[idx] = project;
+      saveDB(db);
+      res.json({ ok: true, project });
+    } catch (err) {
+      console.error("Update project error:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  })();
 });
 
 // Delete a project (owner only)
 app.delete("/api/projects/:id", authenticate, (req, res) => {
-  const id = Number(req.params.id);
-  const db = loadDB();
-  const idx = (db.projects || []).findIndex((p) => p.id === id);
-  if (idx === -1) return res.status(404).json({ error: "Not found" });
-  const project = db.projects[idx];
-  // Simple policy: allow deletion if requester is the creator or any authenticated superuser
-  // (in this simplified app, any authenticated user is treated as a superuser)
-  db.projects.splice(idx, 1);
-  saveDB(db);
-  res.json({ ok: true });
+  (async () => {
+    try {
+      const id = Number(req.params.id);
+      if (supabase) {
+        const { error } = await supabase.from("projects").delete().eq("id", id);
+        if (error)
+          return res.status(400).json({ error: error.message || error });
+        return res.json({ ok: true });
+      }
+
+      const db = loadDB();
+      const idx = (db.projects || []).findIndex((p) => p.id === id);
+      if (idx === -1) return res.status(404).json({ error: "Not found" });
+      db.projects.splice(idx, 1);
+      saveDB(db);
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("Delete project error:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  })();
 });
 
 const PORT = process.env.PORT || 4000;

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: jkbg-backend
+    env: node
+    region: oregon
+    plan: starter
+    repo: "https://github.com/Dante-254/JKBG_Construction_Company_LTD"
+    branch: master
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    envVars:
+      - key: JWT_SECRET
+        value: "<REPLACE_WITH_JWT_SECRET>"
+      - key: FRONTEND_ORIGIN
+        value: "<REPLACE_WITH_FRONTEND_URL>"
+      - key: CLOUDINARY_CLOUD_NAME
+        value: "<REPLACE>"
+      - key: CLOUDINARY_API_KEY
+        value: "<REPLACE>"
+      - key: CLOUDINARY_API_SECRET
+        value: "<REPLACE>"
+      - key: SUPABASE_URL
+        value: "<REPLACE>"
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        value: "<REPLACE>"
+      - key: NODE_ENV
+        value: "production"
