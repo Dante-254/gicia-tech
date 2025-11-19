@@ -195,7 +195,7 @@ function seedProjectsIfEmpty() {
   const statuses = ["Available", "Sold"];
 
   files.forEach((file, idx) => {
-    const imageUrl = `/project-images/${file}`;
+    const imageUrl = `../public/project-images/${file}`;
     const title = projectNames[idx % projectNames.length];
     const description = descriptions[idx % descriptions.length];
     const status = statuses[idx % statuses.length];
