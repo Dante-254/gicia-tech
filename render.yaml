@@ -1,10 +1,10 @@
 services:
   - type: web
-    name: jkbg-backend
+    name: gicia-backend
     env: node
     region: oregon
     plan: starter
-    repo: "https://github.com/Dante-254/JKBG_Construction_Company_LTD"
+    repo: "https://github.com/Dante-254/gicia-tech.git"
     branch: master
     buildCommand: "npm install"
     startCommand: "npm start"

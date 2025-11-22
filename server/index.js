@@ -399,7 +399,7 @@ app.post("/api/upload", authenticate, upload.single("image"), (req, res) => {
   ) {
     const filePath = req.file.path;
     cloudinary.uploader
-      .upload(filePath, { folder: "jkbg-projects" })
+      .upload(filePath, { folder: "gicia-projects" })
       .then((result) => {
         try {
           // remove local file

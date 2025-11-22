@@ -24,7 +24,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
   });
   const [showForm, setShowForm] = useState(false);
   const [superUser, setSuperUser] = useState<string>(
-    localStorage.getItem("jkbg_user") || ""
+    localStorage.getItem("gicia_user") || ""
   );
   const [loginForm, setLoginForm] = useState({ username: "", password: "" });
   const [loginError, setLoginError] = useState("");
@@ -72,7 +72,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
     fetch(api("/api/upload"), {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+        Authorization: `Bearer ${localStorage.getItem("gicia_token")}`,
       },
       body: fd,
     })
@@ -97,8 +97,8 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
     const data = await res.json();
     if (data.token && data.username) {
       setSuperUser(data.username);
-      localStorage.setItem("jkbg_token", data.token);
-      localStorage.setItem("jkbg_user", data.username);
+      localStorage.setItem("gicia_token", data.token);
+      localStorage.setItem("gicia_user", data.username);
       setLoginForm({ username: "", password: "" });
       setShowLoginModal(false);
     } else {
@@ -117,7 +117,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+        Authorization: `Bearer ${localStorage.getItem("gicia_token")}`,
       },
       body: JSON.stringify({ ...form }),
     });
@@ -175,7 +175,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+        Authorization: `Bearer ${localStorage.getItem("giciaa_token")}`,
       },
       body: JSON.stringify(editForm),
     });
@@ -197,7 +197,7 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
     const res = await fetch(`${api(`/api/projects/${selectedProject.id}`)}`, {
       method: "DELETE",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("jkbg_token")}`,
+        Authorization: `Bearer ${localStorage.getItem("gicia_token")}`,
       },
     });
     if (res.ok) {
@@ -250,8 +250,8 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
             className="owner-logout-btn btn-secondary"
             onClick={() => {
               setSuperUser("");
-              localStorage.removeItem("jkbg_token");
-              localStorage.removeItem("jkbg_user");
+              localStorage.removeItem("gicia_token");
+              localStorage.removeItem("gicia_user");
             }}
           >
             Logout
@@ -260,9 +260,9 @@ function Projects(/*{ isOwner = false }: ProjectsProps*/) {
       )}
 
       {!superUser && (
-        <div style={{ marginBottom: 12, color: "#666", fontSize: "0.95rem" }}>
-          
-        </div>
+        <div
+          style={{ marginBottom: 12, color: "#666", fontSize: "0.95rem" }}
+        ></div>
       )}
 
       {showLoginModal && (

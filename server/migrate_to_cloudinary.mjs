@@ -56,7 +56,7 @@ for (const p of projects) {
     // await upload
     // eslint-disable-next-line no-await-in-loop
     const result = await cloudinary.uploader.upload(imgPath, {
-      folder: "jkbg-projects",
+      folder: "giciaa-projects",
     });
     if (result && result.secure_url) {
       p.image = result.secure_url;

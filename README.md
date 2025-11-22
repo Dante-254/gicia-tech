@@ -1,6 +1,6 @@
-# JKBG Construction Company Ltd Website
+# Gicia Technologies Website
 
-This is a React-based website for JKBG Construction Company Ltd.
+This is a React-based website for Gicia Technologies.
 
 ## Getting Started
 
@@ -13,8 +13,8 @@ This is a React-based website for JKBG Construction Company Ltd.
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Dante-254/JKBG_Construction_Company_LTD.git
-   cd JKBG_Construction_Company_LTD
+   git clone https://github.com/Dante-254/gicia-tech.git
+   cd gicia-tech
    ```
 2. Install dependencies:
    Open a terminal in the project folder and run:
@@ -57,7 +57,7 @@ Then open [http://localhost:5000](http://localhost:5000) in your browser.
 
 For any issues, please contact the project maintainer.
 
-# JKBG Construction Company Ltd
+# Gicia Technologies
 
 ## Setup Instructions
 
@@ -65,8 +65,8 @@ For any issues, please contact the project maintainer.
 
 - Create the database and tables:
   ```sql
-  CREATE DATABASE IF NOT EXISTS jkbgccl;
-  USE jkbgccl;
+  CREATE DATABASE IF NOT EXISTS giciaccl;
+  USE giciaccl;
   CREATE TABLE IF NOT EXISTS projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -82,7 +82,7 @@ For any issues, please contact the project maintainer.
   ```
 - Seed initial projects:
   ```sh
-  mysql -u manoti -p jkbgccl < server/seed-projects.sql
+  mysql -u manoti -p giciaccl < server/seed-projects.sql
   ```
 
 ### 2. MySQL User Setup
@@ -90,7 +90,7 @@ For any issues, please contact the project maintainer.
 - Ensure user `manoti` exists and has privileges:
   ```sql
   ALTER USER 'manoti'@'localhost' IDENTIFIED BY 'your_actual_password';
-  GRANT ALL PRIVILEGES ON jkbgccl.* TO 'manoti'@'localhost';
+  GRANT ALL PRIVILEGES ON giciaccl.* TO 'manoti'@'localhost';
   FLUSH PRIVILEGES;
   ```
 - Update `/server/index.js` with:
@@ -99,7 +99,7 @@ For any issues, please contact the project maintainer.
     host: "localhost",
     user: "manoti",
     password: "your_actual_password",
-    database: "jkbgccl",
+    database: "giciaccl",
   });
   ```
 

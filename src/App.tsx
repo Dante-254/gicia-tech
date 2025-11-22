@@ -15,7 +15,7 @@ function App() {
   const [newUserPassword, setNewUserPassword] = useState("");
   const [createUserError, setCreateUserError] = useState("");
   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("jkbg_darkmode") === "true";
+    return localStorage.getItem("gicia_darkmode") === "true";
   });
   const [menuOpen, setMenuOpen] = useState(false);
   const [config, setConfig] = useState({
@@ -24,7 +24,7 @@ function App() {
   });
 
   useEffect(() => {
-    localStorage.setItem("jkbg_darkmode", darkMode.toString());
+    localStorage.setItem("gicia_darkmode", darkMode.toString());
     if (darkMode) {
       document.documentElement.setAttribute("data-theme", "dark");
     } else {
@@ -74,9 +74,9 @@ function App() {
               setMenuOpen(false);
             }}
           >
-            JKBG
+            Gicia
           </div>
-          <span className="company-name">Construction</span>
+          <span className="company-name">Technologies</span>
           {config.raptor_mini && (
             <span
               style={{
@@ -158,7 +158,7 @@ function App() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (ownerPassword === "jkbgowner2025") {
+                  if (ownerPassword === "giciaowner2025") {
                     setShowLogin(false);
                     setLoginError("");
                     if (!ownerName) setOwnerName("Super User");

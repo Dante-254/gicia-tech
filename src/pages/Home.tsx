@@ -59,7 +59,9 @@ function Home() {
             }}
           >
             <div className="hero-overlay">
-              <h1 style={{ fontSize: "2rem", margin: 0 }}>JKBG Construction</h1>
+              <h1 style={{ fontSize: "2rem", margin: 0 }}>
+                Gicia Technologies
+              </h1>
               <p style={{ marginTop: 8, opacity: 0.9 }}>
                 Building tomorrow, today
               </p>
@@ -77,7 +79,7 @@ function Home() {
 
         <div className="hero-overlay">
           <h1 style={{ fontSize: "2.4rem", margin: 0, fontWeight: 800 }}>
-            JKBG Construction Company Ltd
+            Gicia Technologies
           </h1>
           <p style={{ marginTop: 8, opacity: 0.95 }}>
             Building projects with integrity and excellence
@@ -113,38 +115,20 @@ function Home() {
           >
             {[
               {
-                icon: "🏗️",
-                name: "Architectural designs",
-                desc: "Expert design solutions",
+                icon: "💻",
+                name: "Software Development",
+                desc: "Custom applications and solutions",
               },
               {
-                icon: "📐",
-                name: "Structural designs",
-                desc: "Strong foundations",
+                icon: "☁️",
+                name: "Cloud Solutions",
+                desc: "Scalable and secure cloud services",
               },
               {
-                icon: "📊",
-                name: "Bill of quantities",
-                desc: "Cost estimation",
+                icon: "📱",
+                name: "Mobile App Development",
+                desc: "Intuitive apps for Android and iOS",
               },
-              {
-                icon: "📋",
-                name: "Plan Approvals",
-                desc: "Regulatory compliance",
-              },
-              {
-                icon: "👷",
-                name: "Project Management",
-                desc: "Efficient delivery",
-              },
-              { icon: "🏢", name: "Contractor", desc: "Quality construction" },
-              { icon: "💼", name: "Consultancy", desc: "Expert guidance" },
-              {
-                icon: "🔨",
-                name: "General construction",
-                desc: "Diverse projects",
-              },
-              { icon: "⚡", name: "Electrical works", desc: "Safe systems" },
             ].map((service, idx) => (
               <div key={idx} className="service-card">
                 <div style={{ fontSize: "2.4rem", marginBottom: "8px" }}>
