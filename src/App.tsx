@@ -156,14 +156,35 @@ function App() {
           <div className="modal-backdrop" onClick={() => setShowLogin(false)}>
             <div className="modal-box" onClick={(e) => e.stopPropagation()}>
               <form
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  if (ownerPassword === "giciaowner2025") {
+                  setLoginError(""); // reset error
+
+                  try {
+                    const res = await fetch("/api/superusers/login", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        username: ownerName,
+                        password: ownerPassword,
+                      }),
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                      setLoginError(data.error || "Login failed");
+                      return;
+                    }
+
+                    // Save token in localStorage/sessionStorage
+                    localStorage.setItem("gicia_token", data.token);
                     setShowLogin(false);
-                    setLoginError("");
-                    if (!ownerName) setOwnerName("Super User");
-                  } else {
-                    setLoginError("Incorrect password. Please try again.");
+                    setOwnerPassword("");
+                    console.log("Logged in as:", data.username);
+                  } catch (err) {
+                    console.error("Login error:", err);
+                    setLoginError("Server error, try again");
                   }
                 }}
               >
