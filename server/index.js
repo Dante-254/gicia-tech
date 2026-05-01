@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
@@ -21,7 +22,7 @@ const app = express();
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:5173";
 const _allowedOrigins = String(FRONTEND_ORIGIN)
   .split(",")
-  .map((s) => s.trim())
+  .map((s) => s.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 function corsOriginChecker(origin, callback) {
   // allow non-browser requests (curl, server-side) or same-origin
@@ -30,7 +31,12 @@ function corsOriginChecker(origin, callback) {
   if (process.env.NODE_ENV !== "production") return callback(null, true);
   // allow wildcard
   if (_allowedOrigins.includes("*")) return callback(null, true);
-  if (_allowedOrigins.includes(origin)) return callback(null, true);
+  // normalize incoming origin (strip trailing slash) before comparing
+  const normalizedOrigin = origin.replace(/\/+$/, "");
+  if (_allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
+  console.warn(
+    `CORS blocked origin: ${origin} | allowed: ${_allowedOrigins.join(", ")}`,
+  );
   return callback(new Error("Not allowed by CORS"), false);
 }
 app.use(cors({ origin: corsOriginChecker }));
@@ -49,7 +55,7 @@ const DB_FILE = path.join(__dirname, "db.json");
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
 if (JWT_SECRET === "change_this_secret") {
   console.warn(
-    "Warning: Using default JWT_SECRET. For production, set a strong JWT_SECRET environment variable."
+    "Warning: Using default JWT_SECRET. For production, set a strong JWT_SECRET environment variable.",
   );
 }
 
@@ -58,7 +64,7 @@ function loadDB() {
     if (!fs.existsSync(DB_FILE)) {
       fs.writeFileSync(
         DB_FILE,
-        JSON.stringify({ superusers: [], projects: [] }, null, 2)
+        JSON.stringify({ superusers: [], projects: [] }, null, 2),
       );
     }
     const raw = fs.readFileSync(DB_FILE, "utf8");
@@ -76,7 +82,7 @@ function saveDB(db) {
 // Serve project images from the public folder
 app.use(
   "/project-images",
-  express.static(path.join(__dirname, "..", "public", "project-images"))
+  express.static(path.join(__dirname, "..", "public", "project-images")),
 );
 
 // Multer setup
@@ -116,17 +122,17 @@ if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     {
       auth: { persistSession: false },
-    }
+    },
   );
   console.log(
-    "Supabase configured: projects and users can be migrated/queried when enabled"
+    "Supabase configured: projects and users can be migrated/queried when enabled",
   );
 }
 
 // In production we require Supabase to be configured. Fail fast if missing.
 if (process.env.NODE_ENV === "production" && !supabase) {
   console.error(
-    "FATAL: NODE_ENV=production but Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY."
+    "FATAL: NODE_ENV=production but Supabase is not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
   );
   process.exit(1);
 }
@@ -316,7 +322,7 @@ app.post("/api/superusers/login", async (req, res) => {
       const token = jwt.sign(
         { username: data.username, id: data.id },
         JWT_SECRET,
-        { expiresIn: "8h" }
+        { expiresIn: "8h" },
       );
       return res.json({ token, username: data.username });
     }
@@ -332,7 +338,7 @@ app.post("/api/superusers/login", async (req, res) => {
       JWT_SECRET,
       {
         expiresIn: "8h",
-      }
+      },
     );
     res.json({ token, username: user.username });
   } catch (err) {
