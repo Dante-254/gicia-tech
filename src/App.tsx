@@ -4,6 +4,9 @@ import About from "./pages/About";
 import Projects from "./pages/Projects";
 import "./App.css";
 
+const API_BASE = import.meta.env.VITE_API_BASE || "";
+const api = (p: string) => (API_BASE ? `${API_BASE}${p}` : p);
+
 function App() {
   const [view, setView] = useState<"home" | "about" | "projects">("home");
   const [showLogin, setShowLogin] = useState(false);
@@ -36,10 +39,10 @@ function App() {
     // Try to fetch server-side config/feature-flags
     // Use vite env as a fallback if server not available
     const clientFlag = import.meta.env.VITE_RAPTOR_MINI === "true";
-    fetch("/api/config")
+    fetch(api("/api/config"))
       .then((r) => r.json())
       .then((c) =>
-        setConfig({ raptor_mini: c.raptor_mini || clientFlag, env: c.env })
+        setConfig({ raptor_mini: c.raptor_mini || clientFlag, env: c.env }),
       )
       .catch(() => {
         setConfig({ ...config, raptor_mini: clientFlag });
@@ -161,7 +164,7 @@ function App() {
                   setLoginError(""); // reset error
 
                   try {
-                    const res = await fetch("/api/superusers/login", {
+                    const res = await fetch(api("/api/superusers/login"), {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -235,13 +238,13 @@ function App() {
                   e.preventDefault();
                   if (!newUserName || !newUserPassword) {
                     setCreateUserError(
-                      "Username and password are both required."
+                      "Username and password are both required.",
                     );
                     return;
                   }
                   if (newUserPassword.length < 6) {
                     setCreateUserError(
-                      "Password must be at least 6 characters."
+                      "Password must be at least 6 characters.",
                     );
                     return;
                   }
