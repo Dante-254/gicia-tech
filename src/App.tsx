@@ -9,6 +9,9 @@ const api = (p: string) => (API_BASE ? `${API_BASE}${p}` : p);
 
 function App() {
   const [view, setView] = useState<"home" | "about" | "projects">("home");
+  const [loggedInUser, setLoggedInUser] = useState<string>(
+    localStorage.getItem("gicia_user") || "",
+  );
   const [showLogin, setShowLogin] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [ownerPassword, setOwnerPassword] = useState("");
@@ -125,9 +128,27 @@ function App() {
             Projects
           </button>
           <div className="nav-right">
-            <button className="btn-icon" onClick={() => setShowLogin(true)}>
-              Owner
-            </button>
+            {loggedInUser ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
+                  👤 {loggedInUser}
+                </span>
+                <button
+                  className="btn-icon"
+                  onClick={() => {
+                    localStorage.removeItem("gicia_token");
+                    localStorage.removeItem("gicia_user");
+                    setLoggedInUser("");
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button className="btn-icon" onClick={() => setShowLogin(true)}>
+                Owner
+              </button>
+            )}
             <button
               className="dark-toggle"
               onClick={() => setDarkMode((d) => !d)}
@@ -180,11 +201,14 @@ function App() {
                       return;
                     }
 
-                    // Save token in localStorage/sessionStorage
+                    // Save credentials and update state
                     localStorage.setItem("gicia_token", data.token);
+                    localStorage.setItem("gicia_user", data.username);
+                    setLoggedInUser(data.username);
                     setShowLogin(false);
                     setOwnerPassword("");
-                    console.log("Logged in as:", data.username);
+                    setOwnerName("");
+                    setView("projects");
                   } catch (err) {
                     console.error("Login error:", err);
                     setLoginError("Server error, try again");
