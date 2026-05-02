@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { ArrowLeft, X, Plus, Pencil, Trash2, Upload } from "lucide-react";
 
 type Project = {
   id: number;
@@ -22,14 +23,8 @@ function Projects() {
     status: "Available",
     image: "",
   });
-  const [superUser, setSuperUser] = useState<string>(
-    localStorage.getItem("gicia_user") || "",
-  );
-  const [loginForm, setLoginForm] = useState({ username: "", password: "" });
-  const [loginError, setLoginError] = useState("");
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
-  // Modal / edit state
+  // Read once on mount — component remounts on each navigation to Projects
+  const superUser = localStorage.getItem("gicia_user") || "";
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -39,7 +34,6 @@ function Projects() {
     image: "",
   });
 
-  // Fetch projects from backend
   useEffect(() => {
     const _API = import.meta.env.VITE_API_BASE || "";
     const _api = (p: string) => (_API ? `${_API}${p}` : p);
@@ -58,7 +52,7 @@ function Projects() {
         setProjects(fetched);
       })
       .catch((err) => console.error("Failed to fetch projects:", err));
-  }, [API_BASE]);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -82,42 +76,11 @@ function Projects() {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.url) {
-          setForm((prev) => ({ ...prev, image: data.url }));
-        }
+        if (data.url) setForm((prev) => ({ ...prev, image: data.url }));
       })
       .catch((err) => console.error("Upload failed:", err));
   };
 
-  // Superuser login
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoginError("");
-    const res = await fetch(api("/api/superusers/login"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(loginForm),
-    });
-    const data = await res.json();
-    if (data.token && data.username) {
-      setSuperUser(data.username);
-      localStorage.setItem("gicia_token", data.token);
-      localStorage.setItem("gicia_user", data.username);
-      setLoginForm({ username: "", password: "" });
-      setShowLoginModal(false);
-    } else {
-      setLoginError(data.error || "Login failed");
-    }
-  };
-
-  // Logout
-  const logout = () => {
-    setSuperUser("");
-    localStorage.removeItem("gicia_token");
-    localStorage.removeItem("gicia_user");
-  };
-
-  // Add project (only if superUser is set)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!superUser) return;
@@ -131,9 +94,7 @@ function Projects() {
     });
     if (res.ok) {
       const data = await res.json();
-      if (data.project) {
-        setProjects([...projects, data.project]);
-      }
+      if (data.project) setProjects([data.project, ...projects]);
       setForm({ title: "", description: "", status: "Available", image: "" });
       setPageView("list");
     }
@@ -211,7 +172,7 @@ function Projects() {
         <div className="page-wrap">
           <div className="add-form-header">
             <button className="btn-back" onClick={() => setPageView("list")}>
-              ← Back to Projects
+              <ArrowLeft size={18} /> Back to Projects
             </button>
             <h2 className="section-title" style={{ margin: 0 }}>
               Add New Project
@@ -230,12 +191,16 @@ function Projects() {
                       className="upload-preview-remove"
                       onClick={() => setForm((f) => ({ ...f, image: "" }))}
                     >
-                      ✕
+                      <X size={16} />
                     </button>
                   </div>
                 ) : (
                   <label className="upload-zone" htmlFor="img-upload">
-                    <span className="upload-zone-icon">🖼️</span>
+                    <Upload
+                      size={32}
+                      className="upload-zone-icon"
+                      strokeWidth={1.5}
+                    />
                     <p className="upload-zone-text">Click to upload an image</p>
                     <p className="upload-zone-hint">PNG, JPG up to 5MB</p>
                     <input
@@ -257,7 +222,7 @@ function Projects() {
                   name="title"
                   value={form.title}
                   onChange={handleChange}
-                  placeholder="e.g. Modern Apartment Complex"
+                  placeholder="e.g. SaaS Dashboard, Mobile Banking App, E-Commerce API"
                   required
                 />
               </div>
@@ -270,7 +235,7 @@ function Projects() {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  placeholder="Describe this project..."
+                  placeholder="e.g. A full-stack web application with real-time sync built using React and Node.js..."
                   required
                 />
               </div>
@@ -351,31 +316,16 @@ function Projects() {
             {projects.length} project{projects.length !== 1 ? "s" : ""}
           </p>
         </div>
-        {superUser ? (
-          <button className="btn-primary" onClick={() => setPageView("add")}>
-            + Add Project
-          </button>
-        ) : (
+        {superUser && (
           <button
-            className="btn-secondary"
-            onClick={() => setShowLoginModal(true)}
+            className="btn-primary"
+            onClick={() => setPageView("add")}
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
           >
-            Owner Login
+            <Plus size={16} /> Add Project
           </button>
         )}
       </div>
-
-      {/* Owner banner */}
-      {superUser && (
-        <div className="owner-banner">
-          <span>
-            ✓ Logged in as <strong>{superUser}</strong>
-          </span>
-          <button className="owner-logout-btn btn-ghost" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      )}
 
       {/* Project grid / empty state */}
       {projects.length === 0 ? (
@@ -446,9 +396,18 @@ function Projects() {
         <div className="modal-backdrop" onClick={closeModal}>
           <div
             className="modal-box"
-            style={{ padding: 0, overflow: "hidden" }}
+            style={{ padding: 0, overflow: "hidden", position: "relative" }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* X close button — always visible top right */}
+            <button
+              className="modal-close-btn"
+              onClick={closeModal}
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
+
             {!isEditing ? (
               <>
                 {selectedProject.image && (
@@ -510,17 +469,30 @@ function Projects() {
                   <div className="modal-actions">
                     {superUser && (
                       <>
-                        <button className="btn-ghost" onClick={handleStartEdit}>
-                          Edit
+                        <button
+                          className="btn-ghost"
+                          onClick={handleStartEdit}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <Pencil size={14} /> Edit
                         </button>
-                        <button className="btn-danger" onClick={handleDelete}>
-                          Delete
+                        <button
+                          className="btn-danger"
+                          onClick={handleDelete}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <Trash2 size={14} /> Delete
                         </button>
                       </>
                     )}
-                    <button className="btn-primary" onClick={closeModal}>
-                      Close
-                    </button>
                   </div>
                 </div>
               </>
@@ -597,105 +569,6 @@ function Projects() {
                 </form>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* ── LOGIN MODAL ────────────────────────────────────────────────────────── */}
-      {showLoginModal && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setShowLoginModal(false)}
-        >
-          <div
-            className="modal-box"
-            style={{ padding: "36px 32px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ textAlign: "center", marginBottom: 28 }}>
-              <div
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 14,
-                  background: "var(--brand)",
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "1.4rem",
-                  fontWeight: 800,
-                  margin: "0 auto 16px",
-                }}
-              >
-                G
-              </div>
-              <h3
-                style={{
-                  margin: "0 0 6px",
-                  fontWeight: 700,
-                  fontSize: "1.2rem",
-                }}
-              >
-                Owner Login
-              </h3>
-              <p className="muted-text">Sign in to manage your projects</p>
-            </div>
-            <form onSubmit={handleLogin}>
-              <div className="form-group">
-                <label className="form-label">Username</label>
-                <input
-                  className="form-input"
-                  name="username"
-                  value={loginForm.username}
-                  onChange={(e) =>
-                    setLoginForm({ ...loginForm, username: e.target.value })
-                  }
-                  placeholder="Enter username"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Password</label>
-                <input
-                  className="form-input"
-                  name="password"
-                  type="password"
-                  value={loginForm.password}
-                  onChange={(e) =>
-                    setLoginForm({ ...loginForm, password: e.target.value })
-                  }
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="btn-primary"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  justifyContent: "center",
-                  marginTop: 8,
-                }}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                className="btn-ghost"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  justifyContent: "center",
-                  marginTop: 8,
-                }}
-                onClick={() => setShowLoginModal(false)}
-              >
-                Cancel
-              </button>
-              {loginError && <div className="error-text">{loginError}</div>}
-            </form>
           </div>
         </div>
       )}
