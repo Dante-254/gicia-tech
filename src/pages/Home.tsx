@@ -118,12 +118,20 @@ function Home() {
             <div className="project-grid">
               {featuredProjects.slice(0, 6).map((project) => (
                 <div key={project.id} className="project-card">
-                  {project.image && (
+                  {project.image ? (
                     <img
                       src={project.image}
                       alt={project.title}
                       className="project-img"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display =
+                          "none";
+                      }}
                     />
+                  ) : (
+                    <div className="project-img-placeholder">
+                      {project.title.charAt(0).toUpperCase()}
+                    </div>
                   )}
                   <div className="project-card-body">
                     <h3 className="project-card-title">{project.title}</h3>

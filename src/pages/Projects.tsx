@@ -408,12 +408,20 @@ function Projects() {
               className="project-card"
               onClick={() => openProject(project)}
             >
-              {project.image && (
+              {project.image ? (
                 <img
                   src={project.image}
                   alt={project.title}
                   className="project-img"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display =
+                      "none";
+                  }}
                 />
+              ) : (
+                <div className="project-img-placeholder">
+                  {project.title.charAt(0).toUpperCase()}
+                </div>
               )}
               <div className="project-card-body">
                 <h3 className="project-card-title">{project.title}</h3>
