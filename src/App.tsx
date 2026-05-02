@@ -13,13 +13,9 @@ function App() {
     localStorage.getItem("gicia_user") || "",
   );
   const [showLogin, setShowLogin] = useState(false);
-  const [showCreateUser, setShowCreateUser] = useState(false);
   const [ownerPassword, setOwnerPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [ownerName, setOwnerName] = useState("");
-  const [newUserName, setNewUserName] = useState("");
-  const [newUserPassword, setNewUserPassword] = useState("");
-  const [createUserError, setCreateUserError] = useState("");
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("gicia_darkmode") === "true";
   });
@@ -66,23 +62,29 @@ function App() {
     }
   };
 
-  // Scroll to services section in Home page (utility function, could be used by Home component)
-  // Removed to simplify, can be added back if needed
+  const logout = () => {
+    localStorage.removeItem("gicia_token");
+    localStorage.removeItem("gicia_user");
+    setLoggedInUser("");
+  };
 
   return (
     <div className="app-root">
+      {/* ── Fixed header ────────────────────────────────────────── */}
       <header className="site-header">
-        <div className="logo-section">
-          <div
-            className="logo"
-            onClick={() => {
-              handleNavClick("home");
-              setMenuOpen(false);
-            }}
-          >
-            Gicia
+        {/* Logo */}
+        <div
+          className="logo-section"
+          onClick={() => {
+            handleNavClick("home");
+            setMenuOpen(false);
+          }}
+        >
+          <div className="logo-mark">G</div>
+          <div>
+            <div className="logo-text">Gicia</div>
+            <div className="logo-sub">Technologies</div>
           </div>
-          <span className="company-name">Technologies</span>
           {config.raptor_mini && (
             <span
               style={{
@@ -99,9 +101,11 @@ function App() {
             </span>
           )}
         </div>
-        <nav className={`nav-menu ${menuOpen ? "nav-menu-open" : ""}`}>
+
+        {/* Nav — nav-right lives INSIDE so it collapses in the mobile drawer */}
+        <nav className={`nav-menu${menuOpen ? " nav-menu-open" : ""}`}>
           <button
-            className="nav-item"
+            className={view === "home" ? "nav-item active" : "nav-item"}
             onClick={() => {
               handleNavClick("home");
               setMenuOpen(false);
@@ -110,7 +114,7 @@ function App() {
             Home
           </button>
           <button
-            className="nav-item"
+            className={view === "about" ? "nav-item active" : "nav-item"}
             onClick={() => {
               handleNavClick("about");
               setMenuOpen(false);
@@ -119,7 +123,7 @@ function App() {
             About
           </button>
           <button
-            className="nav-item"
+            className={view === "projects" ? "nav-item active" : "nav-item"}
             onClick={() => {
               handleNavClick("projects");
               setMenuOpen(false);
@@ -127,45 +131,51 @@ function App() {
           >
             Projects
           </button>
+
+          {/* Auth + dark toggle */}
           <div className="nav-right">
             {loggedInUser ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>
-                  👤 {loggedInUser}
-                </span>
-                <button
-                  className="btn-icon"
-                  onClick={() => {
-                    localStorage.removeItem("gicia_token");
-                    localStorage.removeItem("gicia_user");
-                    setLoggedInUser("");
-                  }}
-                >
-                  Logout
+              <div className="user-chip">
+                <div className="user-chip-avatar">
+                  {loggedInUser[0].toUpperCase()}
+                </div>
+                <span className="user-chip-name">{loggedInUser}</span>
+                <button className="btn-logout" onClick={logout}>
+                  ✕
                 </button>
               </div>
             ) : (
-              <button className="btn-icon" onClick={() => setShowLogin(true)}>
+              <button
+                className="btn-owner"
+                onClick={() => {
+                  setShowLogin(true);
+                  setMenuOpen(false);
+                }}
+              >
                 Owner
               </button>
             )}
             <button
               className="dark-toggle"
               onClick={() => setDarkMode((d) => !d)}
+              aria-label="Toggle dark mode"
             >
               {darkMode ? "🌙" : "☀️"}
             </button>
           </div>
         </nav>
+
+        {/* Hamburger — mobile only */}
         <button
           className="hamburger"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="menu"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label="Toggle menu"
         >
-          ☰
+          {menuOpen ? "✕" : "☰"}
         </button>
       </header>
 
+      {/* ── Page content ────────────────────────────────────────── */}
       <main
         className="main-content"
         onClick={() => {
@@ -175,151 +185,147 @@ function App() {
         {view === "home" && <Home />}
         {view === "about" && <About />}
         {view === "projects" && <Projects />}
+      </main>
 
-        {showLogin && (
-          <div className="modal-backdrop" onClick={() => setShowLogin(false)}>
-            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setLoginError(""); // reset error
+      {/* ── Owner login modal ────────────────────────────────────── */}
+      {showLogin && (
+        <div className="modal-backdrop" onClick={() => setShowLogin(false)}>
+          <div
+            className="modal-box"
+            style={{ padding: "36px" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setLoginError("");
 
-                  try {
-                    const res = await fetch(api("/api/superusers/login"), {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        username: ownerName,
-                        password: ownerPassword,
-                      }),
-                    });
+                try {
+                  const res = await fetch(api("/api/superusers/login"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      username: ownerName,
+                      password: ownerPassword,
+                    }),
+                  });
 
-                    const data = await res.json();
+                  const data = await res.json();
 
-                    if (!res.ok) {
-                      setLoginError(data.error || "Login failed");
-                      return;
-                    }
-
-                    // Save credentials and update state
-                    localStorage.setItem("gicia_token", data.token);
-                    localStorage.setItem("gicia_user", data.username);
-                    setLoggedInUser(data.username);
-                    setShowLogin(false);
-                    setOwnerPassword("");
-                    setOwnerName("");
-                    setView("projects");
-                  } catch (err) {
-                    console.error("Login error:", err);
-                    setLoginError("Server error, try again");
+                  if (!res.ok) {
+                    setLoginError(data.error || "Login failed");
+                    return;
                   }
-                }}
-              >
-                <h3 className="page-title">Owner Login</h3>
+
+                  // Save credentials and update state
+                  localStorage.setItem("gicia_token", data.token);
+                  localStorage.setItem("gicia_user", data.username);
+                  setLoggedInUser(data.username);
+                  setShowLogin(false);
+                  setOwnerPassword("");
+                  setOwnerName("");
+                  setView("projects");
+                } catch (err) {
+                  console.error("Login error:", err);
+                  setLoginError("Server error, try again");
+                }
+              }}
+            >
+              {/* Header */}
+              <div style={{ textAlign: "center", marginBottom: 28 }}>
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 14,
+                    background: "var(--brand)",
+                    color: "#ffffff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "1.5rem",
+                    fontWeight: 800,
+                    margin: "0 auto 16px",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  G
+                </div>
+                <h2
+                  style={{
+                    margin: "0 0 8px",
+                    fontSize: "1.25rem",
+                    fontWeight: 700,
+                    color: "var(--text-1)",
+                  }}
+                >
+                  Owner Login
+                </h2>
+                <p className="muted-text" style={{ margin: 0 }}>
+                  Sign in to manage projects
+                </p>
+              </div>
+
+              {/* Fields */}
+              <div className="form-group">
+                <label className="form-label">Username</label>
                 <input
                   className="form-input"
                   type="text"
                   value={ownerName}
                   onChange={(e) => setOwnerName(e.target.value)}
                   placeholder="Enter username"
+                  required
+                  style={{ marginBottom: 0 }}
                 />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Password</label>
                 <input
                   className="form-input"
                   type="password"
                   value={ownerPassword}
                   onChange={(e) => setOwnerPassword(e.target.value)}
                   placeholder="Enter password"
+                  required
+                  style={{ marginBottom: 0 }}
                 />
-                <div style={{ marginTop: 12 }}>
-                  <button type="submit" className="btn-primary">
-                    Login
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => {
-                      setShowLogin(false);
-                      setLoginError("");
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-                {loginError && <div className="error-text">{loginError}</div>}
-              </form>
-            </div>
-          </div>
-        )}
+              </div>
 
-        {showCreateUser && (
-          <div
-            className="modal-backdrop"
-            onClick={() => setShowCreateUser(false)}
-          >
-            <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!newUserName || !newUserPassword) {
-                    setCreateUserError(
-                      "Username and password are both required.",
-                    );
-                    return;
-                  }
-                  if (newUserPassword.length < 6) {
-                    setCreateUserError(
-                      "Password must be at least 6 characters.",
-                    );
-                    return;
-                  }
-                  setShowCreateUser(false);
-                  setCreateUserError("");
-                  setNewUserName("");
-                  setNewUserPassword("");
+              {/* Actions */}
+              <button
+                type="submit"
+                className="btn-primary"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  marginTop: 8,
+                  justifyContent: "center",
                 }}
               >
-                <div className="owner-modal-icon">👤</div>
-                <h3 className="page-title">Create Super User</h3>
-                <p className="muted-text">
-                  Set up a new super user account with admin privileges
-                </p>
-                <input
-                  className="form-input"
-                  type="text"
-                  value={newUserName}
-                  onChange={(e) => setNewUserName(e.target.value)}
-                  placeholder="Choose a username"
-                />
-                <input
-                  className="form-input"
-                  type="password"
-                  value={newUserPassword}
-                  onChange={(e) => setNewUserPassword(e.target.value)}
-                  placeholder="Create a strong password"
-                />
-                <div style={{ marginTop: 12 }}>
-                  <button type="submit" className="btn-primary">
-                    Create User
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    onClick={() => {
-                      setShowCreateUser(false);
-                      setCreateUserError("");
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-                {createUserError && (
-                  <div className="error-text">{createUserError}</div>
-                )}
-              </form>
-            </div>
+                Sign In
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{
+                  width: "100%",
+                  marginTop: 8,
+                  justifyContent: "center",
+                }}
+                onClick={() => {
+                  setShowLogin(false);
+                  setLoginError("");
+                }}
+              >
+                Cancel
+              </button>
+
+              {loginError && <div className="error-text">{loginError}</div>}
+            </form>
           </div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }
