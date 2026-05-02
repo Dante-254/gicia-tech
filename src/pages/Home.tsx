@@ -87,25 +87,30 @@ function Home() {
         >
           {[
             {
-              icon: "💻",
+              image:
+                "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80&fit=crop",
               name: "Software Development",
-              desc: "Custom applications and solutions tailored to your exact needs",
+              desc: "Custom web and desktop applications built to solve real business problems — fast, clean, and maintainable.",
             },
             {
-              icon: "☁️",
+              image:
+                "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&q=80&fit=crop",
               name: "Cloud Solutions",
-              desc: "Scalable, secure cloud infrastructure for modern businesses",
+              desc: "Scalable, secure cloud infrastructure that grows with your business and keeps your data always available.",
             },
             {
-              icon: "📱",
+              image:
+                "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80&fit=crop",
               name: "Mobile Development",
-              desc: "Intuitive apps for Android and iOS that users love",
+              desc: "Polished Android and iOS apps with intuitive interfaces that users actually enjoy using every day.",
             },
           ].map((s, i) => (
             <div key={i} className="service-card">
-              <span className="service-icon">{s.icon}</span>
-              <h3 className="service-name">{s.name}</h3>
-              <p className="service-desc">{s.desc}</p>
+              <img src={s.image} alt={s.name} className="service-card-img" />
+              <div className="service-card-body">
+                <h3 className="service-name">{s.name}</h3>
+                <p className="service-desc">{s.desc}</p>
+              </div>
             </div>
           ))}
         </div>
